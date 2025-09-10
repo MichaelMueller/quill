@@ -1,5 +1,11 @@
-import asyncio
-from mi_py_essentials.tests import Tests
+import pytest
 
 if __name__ == "__main__":
-    asyncio.run( Tests().exec() )
+    # Run all tests
+    pytest.main()
+
+    # Run tests in a specific file
+    # pytest.main(["tests/test_calculator.py"])
+
+    # Run with markers or expressions
+    # pytest.main(["-k", "CalculatorTest"])

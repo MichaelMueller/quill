@@ -6,19 +6,19 @@ requires = [
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "mi_py_essentials"
+name = "quill"
 version = "0.5.4"
 authors = [
     { name = "Michael Mueller", email = "michaelmuelleronline@gmx.de" }
 ]
-description = "A Python essentials library" # Adjust this to match the actual description if needed
+description = "SQL abstraction framework in Python" # Adjust this to match the actual description if needed
 readme = "README.md"
 license = { text = "Apache-2.0" } # Specify your license here if available
 # dependencies = ["setuptools","dataclasses_json","pyyaml","aiofiles","aioconsole"]
 dynamic = ["dependencies"] # Changed
 
 [project.urls]
-"Source Code" = "https://github.com/MichaelMueller/mi_py_essentials_lib.git"
+"Source Code" = "https://github.com/MichaelMueller/quill_lib.git"
 
 [tool.setuptools.packages.find]
 where = ["."]

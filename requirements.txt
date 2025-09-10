@@ -1,5 +1,4 @@
 # Python version requirement
 pydantic
-pyyaml
-aiofiles
-aioconsole
+pytest
+pytest-cov
