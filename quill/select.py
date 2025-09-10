@@ -8,7 +8,7 @@ from quill.condition import Condition
 
 class Select(Query):
     type: str = "select"
-    table_name: str
+    table_names: list[str]
     columns: list[str]
     where: Optional[Condition] = None
     
@@ -21,7 +21,7 @@ class Select(Query):
     def to_sqlite_sql(self) -> tuple[str, list[Any]]:
         # Build SELECT statement and parameters from SelectData
         sql = "SELECT " + ", ".join(self.columns)
-        sql += " FROM " + self.table_name
+        sql += " FROM " + ", ".join(self.table_names)
         params = []
         if self.where:
             where_sql, where_params = self.where.to_sqlite_sql()

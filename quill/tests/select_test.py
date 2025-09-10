@@ -10,7 +10,7 @@ if not project_path in sys.path:
 from quill.select import Select
 from quill.comparison import Comparison
 from quill.column_ref import ColumnRef
-from quill.and_ import And_
+from quill.and_ import And
 from quill.or_ import Or
 
 class SelectTest:
@@ -19,17 +19,17 @@ class SelectTest:
         pass
 
     def test(self):
-        condition = And_(
+        condition = And(
             items=[
                 Comparison(
-                    left=ColumnRef(table_name="my_table", column_name="age"),
+                    left=ColumnRef(table_name="people", column_name="age"),
                     operator=">",
                     right=18
                 ),
                 Or(
                     items=[
                         Comparison(
-                            left=ColumnRef(table_name="my_table", column_name="name"),
+                            left=ColumnRef(table_name="people", column_name="name"),
                             operator="LIKE",
                             right="A%"
                         ),
@@ -43,7 +43,7 @@ class SelectTest:
             ]
         )
         select = Select(
-            table_name="my_table",
+            table_names=["people"],
             columns=["name", "age"],
             where=condition,
             limit=10,
@@ -52,8 +52,35 @@ class SelectTest:
             order="asc"
         )
         sql, params = select.to_sqlite_sql()
-        assert sql.lower() == "select name, age from my_table where my_table.age > ? and (my_table.name like ? or name like ?) order by name asc limit ? offset ?"
+        assert sql.lower() == "select name, age from people where people.age > ? and (people.name like ? or name like ?) order by name asc limit ? offset ?"
         assert params == [18, "A%", "B%", 10, 0]
+                
+        where = Or(
+            items=[
+                Comparison(
+                left=ColumnRef(column_name="age"),
+                operator="IS",
+                right=None),
+                Comparison(
+                    left=ColumnRef(column_name="name"),
+                    operator="=",
+                    right=ColumnRef(column_name="surname")
+                ),
+                Comparison(
+                    left=ColumnRef(column_name="id"),
+                    operator="IN",
+                    right=[1,2,3]
+                )
+            ]
+        )
+        select = Select(
+            table_names=["people"],
+            columns=["id", "name", "surname", "age"],
+            where=where
+        )
+        sql, params = select.to_sqlite_sql()
+        assert sql.lower() == "select id, name, surname, age from people where age is ? or name = surname or id in (?, ?, ?)"
+        assert params == [None, 1, 2, 3]
 
 if __name__ == "__main__":
     # Run pytest against *this* file only

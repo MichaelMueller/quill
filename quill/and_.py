@@ -6,7 +6,7 @@ import pydantic
 from quill.condition import Condition
 from quill.comparison import Comparison
 
-class And_(Condition):
+class And(Condition):
     type:Literal["and"] = "and"
     items: list[Condition]
     

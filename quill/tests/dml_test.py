@@ -51,6 +51,14 @@ class DmlTest:
         assert sql.lower() == "update my_table set name = ?, age = ? where id = ?"
         assert params == ["Jane", 25, 1]   
         
+        with pytest.raises(ValueError):
+            update = Update(
+                table_name="my_table",
+                id=1,
+                values={"id":2}
+            )
+            sql, params = update.to_sqlite_sql()
+        
     def test_transaction(self):
         transaction = Transaction(
             items=[

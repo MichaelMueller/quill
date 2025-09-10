@@ -16,14 +16,14 @@ class SqliteDatabase(Database):
         self._db_path_asserted: bool = False
         self._db = None
 
-    async def execute_select(self, query:Select) -> AsyncGenerator[int, None]:
+    async def execute_select(self, query:Select) -> AsyncGenerator[tuple, None]:
         await self._assert_db()
         try:
             db = self._db if self._db != None else await aiosqlite.connect(self._db_path)            
             sql, params = query.to_sqlite_sql()
             async with db.execute(sql, params) as cursor:
                 async for row in cursor:        # row is a tuple, e.g. (1, "Alice", 31)
-                    yield list(row)             # convert to list: [1, "Alice", 31]
+                    yield row            
         finally:
             if self._db == None:
                 await db.close()

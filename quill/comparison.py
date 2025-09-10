@@ -29,8 +29,6 @@ class Comparison(Condition):
             placeholders = ", ".join(["?"] * len(self.right))
             sql += f"({placeholders})"
             params.extend(self.right)
-        elif self.right is None:
-            sql += "NULL"
         else:
             sql += "?"
             params.append(self.right)
