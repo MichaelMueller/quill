@@ -5,7 +5,7 @@ import os, datetime
 import pydantic
 import aiosqlite
 # local
-from quill import Module, Column, CreateTable, CreateIndex, Insert, WriteOperation, Transaction, Update, Query, Database, Update, Delete, Select, QueryLog
+from quill import Module, Column, CreateTable, CreateIndex, Insert, WriteOperation, Transaction, Update, Query, Database, Update, Delete, Select, WriteLogModule
 
 class UserModule(Module):
                 
@@ -15,7 +15,7 @@ class UserModule(Module):
 
     async def _initialize(self) -> None:
         if not self._table_initialized:
-            await self._db.register_module(QueryLog, exists_ok=True)
+            await self._db.register_module(WriteLogModule, exists_ok=True)
             create_table = CreateTable(
                 table_name="users",
                 columns=[

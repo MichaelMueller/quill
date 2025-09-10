@@ -20,5 +20,6 @@ from quill.select import Select
 from quill.module import Module
 from quill.database import Database
 from quill.sqlite_database import SqliteDatabase
-from quill.query_log import QueryLog
+from quill.write_log_module import WriteLogModule
+from quill.read_log_module import ReadLogModule
 from quill.user_module import UserModule

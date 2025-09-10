@@ -8,7 +8,7 @@ project_path = os.path.abspath( os.path.dirname( __file__) + "/../.." )
 if not project_path in sys.path:
     sys.path.insert(0, project_path)
 from quill import SqliteDatabase, CreateTable, Column, Transaction, Insert, Update, Delete, Select, \
-    Comparison, ColumnRef, And, Or, Length, WriteOperation, Query, Database, Module, QueryLog, \
+    Comparison, ColumnRef, And, Or, Length, WriteOperation, Query, Database, Module, ReadLogModule, \
     UserModule
 
 
@@ -61,7 +61,7 @@ class SqliteDatabaseTest:
         await db.unregister_module(GeneralModule)
         await db.register_module(GeneralModule)
 
-        await db.register_module(QueryLog)
+        await db.register_module(ReadLogModule)
         
         await db.register_module(UserModule)
         await db.register_module(UserModule, exists_ok=True)
