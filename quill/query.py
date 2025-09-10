@@ -6,4 +6,4 @@ import pydantic
 from quill.sql_expression import SqlExpression
 
 class Query(SqlExpression):    
-    type:Literal["select", "transaction"]
+    type:str
