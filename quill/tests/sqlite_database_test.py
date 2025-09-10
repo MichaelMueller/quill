@@ -8,7 +8,7 @@ project_path = os.path.abspath( os.path.dirname( __file__) + "/../.." )
 if not project_path in sys.path:
     sys.path.insert(0, project_path)
 from quill import SqliteDatabase, CreateTable, Column, Transaction, Insert, Update, Delete, Select, \
-    Comparison, ColumnRef, And, Or, Length, WriteOperation, Query, Database, Hook, QueryLog
+    Comparison, ColumnRef, And, Or, Length, WriteOperation, Query, Database, Module, QueryLog
 
 
 
@@ -44,23 +44,23 @@ class SqliteDatabaseTest:
 
     async def _run(self, db:SqliteDatabase):
         
-        class GeneralHook(Hook):
-            def __init__(self):
+        class GeneralModule(Module):
+            def __init__(self, db:"Database"):
+                super().__init__(db)
                 self._hook_count = 0
 
-            async def __call__(self, db:Database, query:Query, before_execute:bool) -> None:
+            async def __call__(self, query:Query, before_execute:bool) -> None:
                 self._hook_count += 1
-                #print(f"Hook on op: {op.model_dump_json()}")
-        
-        hook = GeneralHook()
-        db.register_hook(hook)
-        with pytest.raises(ValueError):            
-             db.register_hook(hook)
-        db.unregister_hook(hook)
-        db.register_hook(hook)
-        
-        db.register_hook(QueryLog())
-        
+                #print(f"Module on op: {op.model_dump_json()}")
+
+        await db.register_module(GeneralModule)
+        with pytest.raises(ValueError):
+            await db.register_module(GeneralModule)
+        await db.unregister_module(GeneralModule)
+        await db.register_module(GeneralModule)
+
+        await db.register_module(QueryLog)
+
         create_user_table = CreateTable(
             table_name="user",
             columns=[

@@ -17,7 +17,7 @@ from quill.comparison import Comparison
 from quill.column_ref import ColumnRef
 from quill.length import Length
 from quill.select import Select
-from quill.hook import Hook
+from quill.module import Module
 from quill.database import Database
 from quill.sqlite_database import SqliteDatabase
 from quill.query_log import QueryLog

@@ -12,7 +12,7 @@ from quill.database import Database
 from quill.sql_expression import SqlExpression
 from quill.select import Select
 from quill.transaction import Transaction
-from quill.hook import Hook
+from quill.module import Module
 
 class AbstractClassesTest:
 
@@ -37,9 +37,10 @@ class AbstractClassesTest:
             async for _ in db.execute(None):
                 pass
             
-        hook = Hook()
-        with pytest.raises(NotImplementedError):
-            await hook(db, Select(table_names=["people"]), True)
+        module = Module(None)
+        await module.initialize()
+        await module.shutdown()
+        await module.on_query(None, True)
                     
         
 if __name__ == "__main__":

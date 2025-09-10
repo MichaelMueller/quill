@@ -4,7 +4,7 @@ from typing import Optional, Union, AsyncGenerator, Callable, Type, Awaitable, L
 import pydantic
 # local
 if TYPE_CHECKING:
-    from quill.hook import Hook
+    from quill.module import Module
 from quill.query import Query
 from quill.select import Select
 from quill.transaction import Transaction
@@ -12,22 +12,26 @@ from quill.write_operation import WriteOperation
 
 class Database:    
     def __init__(self):        
-        self._hooks:set["Hook"] = set()
+        self._modules:dict[Type["Module"], "Module"] = {}
 
-    def register_hook(self, hook:"Hook") -> None:
-        if hook in self._hooks:
-            raise ValueError("Hook already registered")
-        self._hooks.add(hook)
+    async def register_module(self, module_type:Type["Module"]) -> None:
+        if module_type in self._modules:
+            raise ValueError("Module already registered")
+        module = module_type(self)
+        await module.initialize()
+        self._modules[module_type] = module
 
-    def unregister_hook(self, hook:"Hook") -> None:
-        self._hooks.remove(hook)
+    async def unregister_module(self, module_type:Type["Module"]) -> None:
+        module = self._modules[module_type] 
+        await module.shutdown()
+        del self._modules[module_type]    
 
     async def execute(self, query:Query) -> AsyncGenerator[int | tuple, None]:
         if not isinstance(query, Query):
             raise ValueError(f"query must be an instance of Query, got {query}")
-        
-        for hook in self._hooks:
-            await hook(self, query, before_execute=True)
+                    
+        for module in self._modules.values():
+            await module.on_query(query, before_execute=True)
 
         if isinstance(query, Select):
             async for row in self._execute_select(query):
@@ -45,9 +49,9 @@ class Database:
             for result in inserted_id_or_affected_rows:
                 yield result
         
-        for hook in self._hooks:
-            await hook(self, query, before_execute=False)
-
+        for module in self._modules.values():
+            await module.on_query(query, before_execute=False)
+            
     async def _execute_select(self, query:Select) -> AsyncGenerator[tuple, None]:
         raise NotImplementedError()
         yield

@@ -5,7 +5,7 @@ import os, datetime
 import pydantic
 import aiosqlite
 # local
-from quill.hook import Hook
+from quill.module import Module
 from quill.column import Column
 from quill.create_table import CreateTable
 from quill.insert import Insert
@@ -15,25 +15,26 @@ if TYPE_CHECKING:
     from quill.database import Database
     from quill.query import Query
 
-class QueryLog(Hook):
-    
-    def __init__(self):
-        super().__init__()
+class QueryLog(Module):
+
+    def __init__(self, db: "Database"):
+        super().__init__(db)
         self._table_initialized: bool = False
 
-    async def __call__(self, db: "Database", query:"Query", before_execute:bool) -> None:
+    async def on_query(self, query:"Query", before_execute:bool) -> None:
         if isinstance(query, WriteOperation) and query.table_name == "query_logs":
             return        
         
         if self._table_initialized == False:
-            await self._initialize_table(db)
+            await self._initialize_table()
             self._table_initialized = True
         
         if before_execute == False:
-            async for _ in db.execute(self._get_insert_query(query)):
+            async for _ in self._db.execute(self._get_insert_query(query)):
                 pass
 
-    async def _initialize_table(self, db: "Database") -> None:
+    async def _initialize_table(self) -> None:
+        db = self._db  # type:ignore
         create_table = CreateTable(
             table_name="query_logs",
             columns=[
