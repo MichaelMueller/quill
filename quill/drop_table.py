@@ -4,11 +4,11 @@ from typing import Any, Literal
 import pydantic
 # local
 from quill.write_operation import WriteOperation
-from quill.column import Column
+from quill.sql_expression import IDENTIFIER_REGEX
 
 class DropTable(WriteOperation):
     type:Literal["drop_table"] = "drop_table"
-    table: str    
+    table: str = pydantic.Field(..., pattern=IDENTIFIER_REGEX)
     if_exists: bool = False
     
     def to_sqlite_sql(self) -> tuple[str, list[Any]]:

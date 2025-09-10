@@ -4,6 +4,8 @@ from typing import Any
 import pydantic
 # local
 
+IDENTIFIER_REGEX = r"^[A-Za-z_][A-Za-z0-9_]*$"
+
 class SqlExpression(pydantic.BaseModel):
     type:str
     

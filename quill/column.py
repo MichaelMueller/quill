@@ -3,12 +3,12 @@ from typing import Optional, Literal, Union, Type, Any
 # 3rd party
 import pydantic
 # local
-from quill.sql_expression import SqlExpression
+from quill.sql_expression import SqlExpression, IDENTIFIER_REGEX
 
 class Column(SqlExpression):
     type:Literal["column"] = "column"
     
-    name: str
+    name: str = pydantic.Field(..., pattern=IDENTIFIER_REGEX)
     data_type: Union[Type[str], Type[int], Type[float], Type[bool], Type[bytes]]
     is_nullable: bool = False
     default: Optional[Union[str, int, float, bool]] = None

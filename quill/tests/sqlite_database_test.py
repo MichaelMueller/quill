@@ -7,7 +7,7 @@ import pytest
 project_path = os.path.abspath( os.path.dirname( __file__) + "/../.." )
 if not project_path in sys.path:
     sys.path.insert(0, project_path)
-from quill import SqliteDatabase, CreateTable, Column, Transaction, Insert, Update, Delete, Select
+from quill import SqliteDatabase, CreateTable, Column, Transaction, Insert, Update, Delete, Select, Comparison, ColumnRef, And, Or, Length
 
 
 
@@ -85,6 +85,20 @@ class SqliteDatabaseTest:
         assert data[2] == (1, "Alice", 31)
         assert data[1] == (2, "Bob", 29)
         assert data[0] == (3, "Charlie", 18)
+                
+        # Complex select: filter and aggregate
+        select_complex = Select(
+            table_names=["user"],
+            columns=["*"],
+            where=Comparison(left=ColumnRef(name="age"), operator=">=", right=29),
+            limit=1
+        )
+        result = []
+        async for row in db.execute_select(select_complex):
+            result.append(row)
+        assert len(result) == 1
+        assert result[0] == (1, "Alice", 31)
+        assert result[0][2] == 31  # Average age of Alice (31) and Bob (29)
 
 if __name__ == "__main__":
     # Run pytest against *this* file only

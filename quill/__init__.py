@@ -8,5 +8,10 @@ from quill.transaction import Transaction
 from quill.insert import Insert
 from quill.update import Update
 from quill.delete import Delete
+from quill.and_ import And
+from quill.or_ import Or
+from quill.comparison import Comparison
+from quill.column_ref import ColumnRef
+from quill.length import Length
 from quill.select import Select
 from quill.sqlite_database import SqliteDatabase

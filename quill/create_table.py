@@ -5,10 +5,11 @@ import pydantic
 # local
 from quill.write_operation import WriteOperation
 from quill.column import Column
+from quill.sql_expression import IDENTIFIER_REGEX
 
 class CreateTable(WriteOperation):
     type:Literal["create_table"] = "create_table"
-    table_name: str
+    table_name: str = pydantic.Field(..., pattern=IDENTIFIER_REGEX)
     columns: list[Column]
     if_not_exists: bool = False
 

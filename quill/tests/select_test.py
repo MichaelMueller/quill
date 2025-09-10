@@ -12,6 +12,7 @@ from quill.comparison import Comparison
 from quill.column_ref import ColumnRef
 from quill.and_ import And
 from quill.or_ import Or
+from quill.length import Length
 
 class SelectTest:
 
@@ -22,19 +23,19 @@ class SelectTest:
         condition = And(
             items=[
                 Comparison(
-                    left=ColumnRef(table_name="people", column_name="age"),
+                    left=ColumnRef(table_name="people", name="age"),
                     operator=">",
                     right=18
                 ),
                 Or(
                     items=[
                         Comparison(
-                            left=ColumnRef(table_name="people", column_name="name"),
+                            left=ColumnRef(table_name="people", name="name"),
                             operator="LIKE",
                             right="A%"
                         ),
                         Comparison(
-                            left=ColumnRef(column_name="name"),
+                            left=ColumnRef(name="name"),
                             operator="LIKE",
                             right="B%"
                         )
@@ -58,18 +59,23 @@ class SelectTest:
         where = Or(
             items=[
                 Comparison(
-                left=ColumnRef(column_name="age"),
+                left=ColumnRef(name="age"),
                 operator="IS",
                 right=None),
                 Comparison(
-                    left=ColumnRef(column_name="name"),
+                    left=ColumnRef(name="name"),
                     operator="=",
-                    right=ColumnRef(column_name="surname")
+                    right=ColumnRef(name="surname")
                 ),
                 Comparison(
-                    left=ColumnRef(column_name="id"),
+                    left=ColumnRef(name="id"),
                     operator="IN",
                     right=[1,2,3]
+                ),
+                Comparison(
+                    left=Length(column=ColumnRef(name="name")),
+                    operator=">=",
+                    right=5
                 )
             ]
         )
@@ -79,8 +85,8 @@ class SelectTest:
             where=where
         )
         sql, params = select.to_sqlite_sql()
-        assert sql.lower() == "select id, name, surname, age from people where age is ? or name = surname or id in (?, ?, ?)"
-        assert params == [None, 1, 2, 3]
+        assert sql.lower() == "select id, name, surname, age from people where age is ? or name = surname or id in (?, ?, ?) or length(name) >= ?"
+        assert params == [None, 1, 2, 3, 5]
 
 if __name__ == "__main__":
     # Run pytest against *this* file only
