@@ -21,3 +21,4 @@ from quill.module import Module
 from quill.database import Database
 from quill.sqlite_database import SqliteDatabase
 from quill.query_log import QueryLog
+from quill.user_module import UserModule

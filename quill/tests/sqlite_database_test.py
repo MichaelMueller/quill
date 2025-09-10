@@ -1,5 +1,5 @@
 # builtin
-import os, sys, tempfile
+import os, sys, tempfile, asyncio
 from typing_extensions import Literal, Optional
 # 3rd party
 import pytest
@@ -8,7 +8,8 @@ project_path = os.path.abspath( os.path.dirname( __file__) + "/../.." )
 if not project_path in sys.path:
     sys.path.insert(0, project_path)
 from quill import SqliteDatabase, CreateTable, Column, Transaction, Insert, Update, Delete, Select, \
-    Comparison, ColumnRef, And, Or, Length, WriteOperation, Query, Database, Module, QueryLog
+    Comparison, ColumnRef, And, Or, Length, WriteOperation, Query, Database, Module, QueryLog, \
+    UserModule
 
 
 
@@ -40,7 +41,8 @@ class SqliteDatabaseTest:
             db = SqliteDatabase(temp_db)
             await self._run(db)
         finally:
-            os.remove(temp_db)
+            if os.path.exists(temp_db):
+                os.remove(temp_db)
 
     async def _run(self, db:SqliteDatabase):
         
@@ -60,9 +62,11 @@ class SqliteDatabaseTest:
         await db.register_module(GeneralModule)
 
         await db.register_module(QueryLog)
+        
+        await db.register_module(UserModule)
 
         create_user_table = CreateTable(
-            table_name="user",
+            table_name="person",
             columns=[
                 Column(name="name", data_type="str", is_nullable=False),
                 Column(name="age", data_type="int", is_nullable=True, default=18)
@@ -77,15 +81,15 @@ class SqliteDatabaseTest:
         # Insert
         transaction = Transaction(items=[
             Insert(
-                table_name="user",
+                table_name="person",
                 values={"name": "Alice", "age": 31}
             ),
             Insert(
-                table_name="user",
+                table_name="person",
                 values={"name": "Bob", "age": 29}
             ),
             Insert(
-                table_name="user",
+                table_name="person",
                 values={"name": "Charlie"}   # age will use default value 18
             )
         ])
@@ -97,7 +101,7 @@ class SqliteDatabaseTest:
         
         # select
         select = Select(
-            table_names=["user"],
+            table_names=["person"],
             columns=["id", "name", "age"],
             order_by="id",
             order="desc"
@@ -110,7 +114,7 @@ class SqliteDatabaseTest:
                 
         # Complex select: filter and aggregate
         select_complex = Select(
-            table_names=["user"],
+            table_names=["person"],
             columns=["*"],
             where=Comparison(left=ColumnRef(name="age"), operator=">=", right=29),
             limit=1
@@ -119,6 +123,16 @@ class SqliteDatabaseTest:
         assert len(result) == 1
         assert result[0] == (1, "Alice", 31)
         assert result[0][2] == 31  # Average age of Alice (31) and Bob (29)
+
+        user_module:UserModule = db.module(UserModule)  # type: ignore
+        await user_module.exec( UserModule.Insert(uid="u1", name="Alice", email="alice@example.com") )
+        await user_module.exec( UserModule.Insert(uid="u2", name="Bob", email="bob@example.com") )
+        id_charlie = await user_module.exec( UserModule.Insert(uid="u3", name="Charlie") )
+        await asyncio.sleep(0.1)
+        await user_module.exec( UserModule.Update(id=id_charlie, name="Bobby") )
+        with pytest.raises(ValueError):
+            await user_module.exec( "invalid query" )  # type: ignore
+
 
 if __name__ == "__main__":
     # Run pytest against *this* file only

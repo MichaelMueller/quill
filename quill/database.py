@@ -21,6 +21,9 @@ class Database:
         await module.initialize()
         self._modules[module_type] = module
 
+    def module(self, module_type:Type["Module"]) -> Optional["Module"]:
+        return self._modules.get(module_type, None)
+
     async def unregister_module(self, module_type:Type["Module"]) -> None:
         module = self._modules[module_type] 
         await module.shutdown()

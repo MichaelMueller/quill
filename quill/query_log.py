@@ -39,7 +39,7 @@ class QueryLog(Module):
             table_name="query_logs",
             columns=[
                 Column(name="query", data_type="str", is_nullable=False),
-                Column(name="timestamp", data_type="int", is_nullable=False)
+                Column(name="timestamp", data_type="float", is_nullable=False)
             ]
         )
         async for _ in db.execute(create_table): pass
