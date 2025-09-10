@@ -10,6 +10,7 @@ if not project_path in sys.path:
 from quill.insert import Insert
 from quill.delete import Delete
 from quill.update import Update
+from quill.transaction import Transaction
 
 class DmlTest: 
 
@@ -49,6 +50,33 @@ class DmlTest:
         sql, params = update.to_sqlite_sql()
         assert sql.lower() == "update my_table set name = ?, age = ? where id = ?"
         assert params == ["Jane", 25, 1]   
+        
+    def test_transaction(self):
+        transaction = Transaction(
+            items=[
+                Insert(
+                    table_name="my_table",
+                    values={
+                        "name": "Alice",
+                        "age": 28
+                    }
+                ),
+                Update(
+                    table_name="my_table",
+                    id=1,
+                    values={
+                        "age": 29
+                    }
+                ),
+                Delete(
+                    table_name="my_table",
+                    ids=[2, 3]
+                )
+            ]
+        )
+        sql, params = transaction.to_sqlite_sql()
+        assert sql.lower() == "insert into my_table (name, age) values (?, ?); update my_table set age = ? where id = ?; delete from my_table where id in (?, ?);"
+        assert params == ["Alice", 28, 29, 1, 2, 3]
         
 if __name__ == "__main__":
     # Run pytest against *this* file only

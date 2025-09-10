@@ -11,9 +11,11 @@ class Database:
     
     async def execute(self, query:Query) -> Union[ list[int], AsyncGenerator[int, None], None ]:
         if query.type == "select":
-            return await self._execute_select(query)
+            return await self.execute_select(query)
         elif query.type == "transaction":
-            return await self._execute_transaction(query)
+            return await self.execute_transaction(query)
+        else:
+            raise ValueError(f"Unsupported query type: {query}")
 
     async def execute_select(self, query:Select) -> AsyncGenerator[int, None]:
         raise NotImplementedError()

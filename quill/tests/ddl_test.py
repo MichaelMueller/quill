@@ -22,14 +22,16 @@ class DdlTest:
         create_table = CreateTable(
             table_name="my_table",
             columns=[
-                Column(name="name", data_type=str, is_nullable=False),
-                Column(name="age", data_type=int, is_nullable=True, default=18)
+                Column(name="name", data_type=str, is_nullable=False, default="user"),
+                Column(name="age", data_type=int, is_nullable=True, default=18),
+                Column(name="admin", data_type=bool, is_nullable=True, default=False),                
+                Column(name="bio", data_type=str, is_nullable=True, default=None)
             ],
             if_not_exists=True
         )
         sql, params = create_table.to_sqlite_sql()
-        assert sql.lower() == "create table if not exists my_table (id integer primary key autoincrement, name text not null, age integer default ?)"
-        assert params == [18]
+        assert sql.lower() == "create table if not exists my_table (id integer primary key autoincrement, name text not null default 'user', age integer default 18, admin boolean default 0, bio text default null)"
+        assert params == []
         
     def test_rename_table(self):
         rename_table = RenameTable(
@@ -80,6 +82,7 @@ class DdlTest:
         sql, params = drop_index.to_sqlite_sql()
         assert sql.lower() == "drop index if exists my_table_name_age_uidx"
         assert params == []
+           
 
 if __name__ == "__main__":
     # Run pytest against *this* file only

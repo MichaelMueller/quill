@@ -11,7 +11,7 @@ class Column(SqlExpression):
     name: str
     data_type: Union[Type[str], Type[int], Type[float], Type[bool], Type[bytes]]
     is_nullable: bool = False
-    default: Optional[Union[str, int, float, bool, bytes]] = None
+    default: Optional[Union[str, int, float, bool]] = None
 
     def to_sqlite_sql(self) -> tuple[str, list[Any]]:
         sqlite_type = {
@@ -28,8 +28,15 @@ class Column(SqlExpression):
         else:
             if not self.is_nullable:
                 sql += " NOT NULL"
-            if self.default is not None:
-                sql += f" DEFAULT ?"
-                args.append(self.default)
+            if self.default is not None or self.is_nullable:
+                if type(self.default) == str:
+                    default_sql_value = f"'{self.default}'"
+                elif type(self.default) == bool:
+                    default_sql_value = 1 if self.default else 0
+                elif self.default == None:
+                    default_sql_value = "NULL"
+                else:
+                    default_sql_value = self.default
+                sql += f" DEFAULT {default_sql_value}"
         return sql, args
-  
+    

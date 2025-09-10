@@ -37,9 +37,9 @@ class SqliteDatabase(Database):
                 sql, params = operation.to_sqlite_sql()
                 async with db.execute(sql, params) as cursor:
                     if operation.type == "insert":
-                        inserted_id_or_affected_rows.append(await cursor.lastrowid)
+                        inserted_id_or_affected_rows.append(cursor.lastrowid)
                     else:
-                        inserted_id_or_affected_rows.append(await cursor.rowcount)
+                        inserted_id_or_affected_rows.append(cursor.rowcount)
             await db.commit()        
         finally:
             if self._db == None:
@@ -51,6 +51,12 @@ class SqliteDatabase(Database):
             if "/" in self._db_path or "\\" in self._db_path:
                 db_dir = os.path.dirname(self._db_path)
                 os.makedirs(db_dir, exist_ok=True)
-            elif self._db_path == ":memory:":
+            elif self._db_path == ":memory:" or self._db_path == "":
                 self._db = await aiosqlite.connect(self._db_path)
             self._db_path_asserted = True
+
+    async def close(self) -> None:
+        if self._db != None:
+            await self._db.close()
+            self._db = None
+            self._db_path_asserted = False
