@@ -32,8 +32,12 @@ class Column(SqlExpression):
                 if type(self.default) == str or type(self.default) == bytes:
                     default_sql_value = f"'{self.default}'"
                     import sqlite3
-                    conn = sqlite3.connect(":memory:")
-                    escaped_value = conn.execute("SELECT quote(?)", (self.default,)).fetchone()[0]
+                    try:
+                        conn = sqlite3.connect(":memory:")
+                        escaped_value = conn.execute("SELECT quote(?)", (self.default,)).fetchone()[0]
+                        default_sql_value = escaped_value
+                    finally:
+                        conn.close()
                 elif type(self.default) == bool:
                     default_sql_value = 1 if self.default else 0
                 elif self.default == None:

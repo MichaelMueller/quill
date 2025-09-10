@@ -12,6 +12,7 @@ from quill.database import Database
 from quill.sql_expression import SqlExpression
 from quill.select import Select
 from quill.transaction import Transaction
+from quill.hook import Hook
 
 class AbstractClassesTest:
 
@@ -27,22 +28,19 @@ class AbstractClassesTest:
             
         db = Database()
         with pytest.raises(NotImplementedError):
-            async for _ in db.execute_select(Select(table_names=["people"])):
+            async for _ in db.execute(Select(table_names=["people"])):
                 pass
         with pytest.raises(NotImplementedError):
-            await db.execute_transaction(Transaction(items=[]))  
+            async for _ in db.execute(Transaction(items=[])):
+                pass            
+        with pytest.raises(ValueError):
+            async for _ in db.execute(None):
+                pass
             
-        async def dummy_hook(query:Select):
-            pass
-
-        db.register_hook(dummy_hook, "pre_execute", Select, [])
-        matched_hooks = db._find_hook("pre_execute", Select, ["people"])
-        assert len(matched_hooks) == 1
-        matched_hooks = db._find_hook("post_execute", Select, ["people"])
-        assert len(matched_hooks) == 0
-        
-        db.unregister_hook(dummy_hook)
-        assert len(db._hooks) == 0
+        hook = Hook()
+        with pytest.raises(NotImplementedError):
+            await hook(db, Select(table_names=["people"]), True)
+                    
         
 if __name__ == "__main__":
     # Run pytest against *this* file only
