@@ -22,10 +22,10 @@ class DdlTest:
         create_table = CreateTable(
             table_name="my_table",
             columns=[
-                Column(name="name", data_type=str, is_nullable=False, default="user"),
-                Column(name="age", data_type=int, is_nullable=True, default=18),
-                Column(name="admin", data_type=bool, is_nullable=True, default=False),                
-                Column(name="bio", data_type=str, is_nullable=True, default=None)
+                Column(name="name", data_type="str", is_nullable=False, default="user"),
+                Column(name="age", data_type="int", is_nullable=True, default=18),
+                Column(name="admin", data_type="bool", is_nullable=True, default=False),                
+                Column(name="bio", data_type="str", is_nullable=True, default=None)
             ],
             if_not_exists=True
         )
@@ -35,7 +35,7 @@ class DdlTest:
         
     def test_rename_table(self):
         rename_table = RenameTable(
-            old_table_name="my_table",
+            table_name="my_table",
             new_table_name="new_table"
         )
         sql, params = rename_table.to_sqlite_sql()
@@ -44,7 +44,7 @@ class DdlTest:
 
     def test_drop_table(self):
         drop_table = DropTable(
-            table="my_table",
+            table_name="my_table",
             if_exists=True
         )
         sql, params = drop_table.to_sqlite_sql()

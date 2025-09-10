@@ -28,8 +28,7 @@ class SqliteDatabase(Database):
             if self._db == None:
                 await db.close()
     
-    async def _execute_transaction(self, query:Transaction) -> list[int]:
-        inserted_id_or_affected_rows:list[int] = []
+    async def _execute_transaction(self, query:Transaction) -> AsyncGenerator[int, None]:
         await self._assert_db()
         try:
             db = self._db if self._db != None else await aiosqlite.connect(self._db_path)     
@@ -37,14 +36,13 @@ class SqliteDatabase(Database):
                 sql, params = operation.to_sqlite_sql()
                 async with db.execute(sql, params) as cursor:
                     if operation.type == "insert":
-                        inserted_id_or_affected_rows.append(cursor.lastrowid)
+                        yield cursor.lastrowid
                     else:
-                        inserted_id_or_affected_rows.append(cursor.rowcount)
+                        yield cursor.rowcount
             await db.commit()        
         finally:
             if self._db == None:
                 await db.close()
-        return inserted_id_or_affected_rows
     
     async def _assert_db(self) -> None:
         if not self._db_path_asserted:

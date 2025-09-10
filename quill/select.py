@@ -9,7 +9,7 @@ from quill.condition import Condition
 class Select(Query):
     type: str = "select"
     table_names: list[str]
-    columns: list[str]
+    columns: Optional[list[str]] = None
     where: Optional[Condition] = None
     
     limit: Optional[int] = None
@@ -20,7 +20,7 @@ class Select(Query):
                 
     def to_sqlite_sql(self) -> tuple[str, list[Any]]:
         # Build SELECT statement and parameters from SelectData
-        sql = "SELECT " + ", ".join(self.columns)
+        sql = "SELECT " + ( ", ".join(self.columns) if self.columns else "*" )
         sql += " FROM " + ", ".join(self.table_names)
         params = []
         if self.where:

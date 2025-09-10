@@ -7,7 +7,6 @@ from quill.write_operation import WriteOperation
 
 class Insert(WriteOperation):
     type:Literal["insert"] = "insert"
-    table_name: str
     values: dict[str, Optional[Any]]
         
     def to_sqlite_sql(self) -> tuple[str, list[Any]]:

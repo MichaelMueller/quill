@@ -9,7 +9,6 @@ from quill.sql_expression import IDENTIFIER_REGEX
 
 class CreateTable(WriteOperation):
     type:Literal["create_table"] = "create_table"
-    table_name: str = pydantic.Field(..., pattern=IDENTIFIER_REGEX)
     columns: list[Column]
     if_not_exists: bool = False
 
@@ -28,7 +27,7 @@ class CreateTable(WriteOperation):
         sql += self.table_name + " ("
         params = []
         cols = self.columns.copy()
-        cols.insert(0, Column(name="id", data_type=int))
+        cols.insert(0, Column(name="id", data_type="int"))
         for i, col in enumerate(cols):
             col_sql, col_params = col.to_sqlite_sql()
             sql += (", " if i > 0 else "") + col_sql

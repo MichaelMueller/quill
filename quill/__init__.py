@@ -1,4 +1,5 @@
 from quill.column import Column
+from quill.write_operation import WriteOperation
 from quill.create_table import CreateTable
 from quill.rename_table import RenameTable
 from quill.drop_table import DropTable

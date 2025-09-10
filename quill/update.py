@@ -7,7 +7,6 @@ from quill.write_operation import WriteOperation
 
 class Update(WriteOperation):
     type:Literal["update"] = "update"    
-    table_name: str
     values: dict[str, Optional[Any]]
     id:int
             

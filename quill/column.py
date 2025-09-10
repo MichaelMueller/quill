@@ -9,17 +9,17 @@ class Column(SqlExpression):
     type:Literal["column"] = "column"
     
     name: str = pydantic.Field(..., pattern=IDENTIFIER_REGEX)
-    data_type: Union[Type[str], Type[int], Type[float], Type[bool], Type[bytes]]
+    data_type: Literal["str", "int", "float", "bool", "bytes"]
     is_nullable: bool = False
     default: Optional[Union[str, int, float, bool, bytes]] = None
 
     def to_sqlite_sql(self) -> tuple[str, list[Any]]:
         sqlite_type = {
-            str: "TEXT",
-            int: "INTEGER",
-            float: "REAL",
-            bool: "BOOLEAN",
-            bytes: "BLOB"
+            "str": "TEXT",
+            "int": "INTEGER",
+            "float": "REAL",
+            "bool": "BOOLEAN",
+            "bytes": "BLOB"
         }.get(self.data_type)
         args = []
         sql = f"{self.name} {sqlite_type}"

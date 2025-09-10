@@ -7,7 +7,7 @@ import pytest
 project_path = os.path.abspath( os.path.dirname( __file__) + "/../.." )
 if not project_path in sys.path:
     sys.path.insert(0, project_path)
-from quill import SqliteDatabase, CreateTable, Column, Transaction, Insert, Update, Delete, Select, Comparison, ColumnRef, And, Or, Length
+from quill import SqliteDatabase, CreateTable, Column, Transaction, Insert, Update, Delete, Select, Comparison, ColumnRef, And, Or, Length, WriteOperation
 
 
 
@@ -34,11 +34,31 @@ class SqliteDatabaseTest:
             await self._run(SqliteDatabase(temp_file))
 
     async def _run(self, db:SqliteDatabase):
+        
+        class GeneralHook:
+            def __init__(self):
+                self._hook_count = 0
+                
+            async def __call__(self, op:Select | WriteOperation) -> None:
+                self._hook_count += 1
+                #print(f"Hook on op: {op.model_dump_json()}")
+        
+        hook = GeneralHook()
+        db.register_hook(hook)
+        with pytest.raises(ValueError):            
+             db.register_hook(hook, state="before_execute")
+        hook2 = GeneralHook()
+        db.register_hook(hook2, state="before_execute")
+        hook3 = GeneralHook()
+        db.register_hook(hook3, target_tables=["groups"]) # should never be called
+        hook4 = GeneralHook()
+        db.register_hook(hook4, type_=Select)
+        
         create_user_table = CreateTable(
             table_name="user",
             columns=[
-                Column(name="name", data_type=str, is_nullable=False),
-                Column(name="age", data_type=int, is_nullable=True, default=18)
+                Column(name="name", data_type="str", is_nullable=False),
+                Column(name="age", data_type="int", is_nullable=True, default=18)
             ],
             if_not_exists=True
         )
