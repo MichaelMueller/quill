@@ -1,16 +1,18 @@
 # builtin
-from typing import Optional, Any
+from typing import Optional, Literal, Union, Type, Any
 # 3rd party
 import pydantic
 # local
-from quill.data.column import Column as ColumnData
-from quill.expression import Expression
+from quill.sql_expression import SqlExpression
 
-class Column(Expression):
+class Column(SqlExpression):
+    type:Literal["column"] = "column"
     
-    def __init__(self, data:ColumnData):
-        self._data = data
-        
+    name: str
+    data_type: Union[Type[str], Type[int], Type[float], Type[bool], Type[bytes]]
+    is_nullable: bool = False
+    default: Optional[Union[str, int, float, bool, bytes]] = None
+
     def to_sqlite_sql(self) -> tuple[str, list[Any]]:
         sqlite_type = {
             str: "TEXT",
@@ -18,15 +20,16 @@ class Column(Expression):
             float: "REAL",
             bool: "BOOLEAN",
             bytes: "BLOB"
-        }.get(self._data.data_type)
+        }.get(self.data_type)
         args = []
-        sql = f"{self._data.name} {sqlite_type}"
-        if self._data.name == "id":
+        sql = f"{self.name} {sqlite_type}"
+        if self.name == "id":
             sql += " PRIMARY KEY AUTOINCREMENT"
         else:
-            if not self._data.is_nullable:
+            if not self.is_nullable:
                 sql += " NOT NULL"
-            if self._data.default is not None:
+            if self.default is not None:
                 sql += f" DEFAULT ?"
-                args.append(self._data.default)
+                args.append(self.default)
         return sql, args
+  

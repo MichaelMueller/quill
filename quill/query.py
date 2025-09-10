@@ -2,7 +2,8 @@
 from typing import Literal
 # 3rd party
 import pydantic
-# local 
+# local
+from quill.sql_expression import SqlExpression
 
-class Query(pydantic.BaseModel):    
+class Query(SqlExpression):    
     type:Literal["select", "transaction"]

@@ -2,3 +2,4 @@
 pydantic
 pytest
 pytest-cov
+aiosqlite
