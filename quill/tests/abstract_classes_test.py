@@ -26,7 +26,8 @@ class AbstractClassesTest:
             
         db = Database()
         with pytest.raises(NotImplementedError):
-            await db.execute_select(None)  
+            async for _ in db.execute_select(None):
+                pass
         with pytest.raises(NotImplementedError):
             await db.execute_transaction(None)  
 

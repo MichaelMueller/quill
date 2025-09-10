@@ -16,7 +16,7 @@ class SqliteDatabase(Database):
         self._db_path_asserted: bool = False
         self._db = None
 
-    async def execute_select(self, query:Select) -> AsyncGenerator[tuple, None]:
+    async def _execute_select(self, query:Select) -> AsyncGenerator[tuple, None]:
         await self._assert_db()
         try:
             db = self._db if self._db != None else await aiosqlite.connect(self._db_path)            
@@ -28,7 +28,7 @@ class SqliteDatabase(Database):
             if self._db == None:
                 await db.close()
     
-    async def execute_transaction(self, query:Transaction) -> list[int]:
+    async def _execute_transaction(self, query:Transaction) -> list[int]:
         inserted_id_or_affected_rows:list[int] = []
         await self._assert_db()
         try:
