@@ -64,6 +64,7 @@ class SqliteDatabaseTest:
         await db.register_module(QueryLog)
         
         await db.register_module(UserModule)
+        await db.register_module(UserModule, exists_ok=True)
 
         create_user_table = CreateTable(
             table_name="person",
@@ -125,14 +126,32 @@ class SqliteDatabaseTest:
         assert result[0][2] == 31  # Average age of Alice (31) and Bob (29)
 
         user_module:UserModule = db.module(UserModule)  # type: ignore
-        await user_module.exec( UserModule.Insert(uid="u1", name="Alice", email="alice@example.com") )
-        await user_module.exec( UserModule.Insert(uid="u2", name="Bob", email="bob@example.com") )
-        id_charlie = await user_module.exec( UserModule.Insert(uid="u3", name="Charlie") )
-        await asyncio.sleep(0.1)
-        await user_module.exec( UserModule.Update(id=id_charlie, name="Bobby") )
-        with pytest.raises(ValueError):
-            await user_module.exec( "invalid query" )  # type: ignore
-
+        assert user_module is not None
+        
+        tx = Transaction(items=[
+            Insert(
+                table_name="users",
+                values={"uid": "u1", "name": "Alice", "email": "alice@example.com"}
+            ),
+            Insert(
+                table_name="users",
+                values={"uid": "u2", "name": "Bob", "email": "bob@example.com"}
+            ),
+            Insert(
+                table_name="users",
+                values={"uid": "u3", "name": "Charlie"}
+            )
+        ])
+        op_users:list[Insert] = tx.find("users")  # type: ignore
+        user_inserts:list[Insert] = tx.find("users", Insert)  # type: ignore
+        assert len(op_users) == len(user_inserts)
+        ids = [ id async for id in user_module.db().execute(tx) ]
+        affected_rows = [ ai async for ai in user_module.db().execute( Update( table_name="users", values={"email": "bob_new@example.com"}, id=ids[1] ) ) ]
+        assert affected_rows == [1]
+        # await user_module.exec( UserModule.Update(id=id_charlie, name="Bobby") )
+        # with pytest.raises(ValueError):
+        #     await user_module.exec( "invalid query" )  # type: ignore
+        pass
 
 if __name__ == "__main__":
     # Run pytest against *this* file only

@@ -5,38 +5,23 @@ import os, datetime
 import pydantic
 import aiosqlite
 # local
-from quill import Module, Column, CreateTable, CreateIndex, Insert, WriteOperation, Transaction, Update, Query, Database, Update, Delete, Select
+from quill import Module, Column, CreateTable, CreateIndex, Insert, WriteOperation, Transaction, Update, Query, Database, Update, Delete, Select, QueryLog
 
 class UserModule(Module):
-    
-    class Insert(pydantic.BaseModel):
-        uid: str
-        name: str
-        email: Optional[str] = None
-        
-    class Update(pydantic.BaseModel):
-        id: int
-        uid: Optional[str] = None
-        name: Optional[str] = None
-        email: Optional[str] = None
-        
-    class Delete(pydantic.BaseModel):
-        ids : list[int]
-            
+                
     def __init__(self, db: "Database"):
         super().__init__(db)
         self._table_initialized: bool = False
 
-    async def initialize(self) -> None:
+    async def _initialize(self) -> None:
         if not self._table_initialized:
+            await self._db.register_module(QueryLog, exists_ok=True)
             create_table = CreateTable(
                 table_name="users",
                 columns=[
                     Column(name="uid", data_type="str"),
                     Column(name="name", data_type="str"),
-                    Column(name="email", data_type="str", is_nullable=True),
-                    Column(name="created_at", data_type="float"),
-                    Column(name="updated_at", data_type="float"),
+                    Column(name="email", data_type="str", is_nullable=True)
                 ],
                 if_not_exists=True
             )
@@ -57,44 +42,26 @@ class UserModule(Module):
             async for _ in self._db.execute(tx): pass
             self._table_initialized = True
 
-    async def exec(self, query: "UserModule.Insert") -> int:
-        if isinstance(query, UserModule.Insert):
-            insert = Insert(
-                table_name="users",
-                values=query.model_dump()
-            )
-            async for result in self._db.execute(insert):
-                return result
-        elif isinstance(query, UserModule.Update):
-            update = Update(
-                table_name="users",
-                values=query.model_dump(exclude_unset=True, exclude={"id"}),
-                id=query.id
-            )
-            async for result in self._db.execute(update):
-                return result
-        else:
-            raise ValueError(f"Unsupported query type: {query}")
-
     async def on_query(self, query:"Query", before_execute:bool) -> None:
-        if not before_execute:
-            return
+        pass
+        # if not before_execute:
+        #     return
         
-        if isinstance(query, WriteOperation):
-            tx = Transaction(items=[query])
-        elif isinstance(query, Transaction):
-            tx = query
-        else:
-            return
-        users_ops = tx.find("users")
-        if len(users_ops) == 0:
-            return
+        # if isinstance(query, WriteOperation):
+        #     tx = Transaction(items=[query])
+        # elif isinstance(query, Transaction):
+        #     tx = query
+        # else:
+        #     return
+        # users_ops = tx.find("users")
+        # if len(users_ops) == 0:
+        #     return
         
-        now = datetime.datetime.now().timestamp()
-        for op in users_ops:
-            if isinstance(op, Insert):
-                op.values["created_at"] = now
-                op.values["updated_at"] = now
-            elif isinstance(op, Update):
-                op.values["updated_at"] = now
+        # now = datetime.datetime.now().timestamp()
+        # for op in users_ops:
+        #     if isinstance(op, Insert):
+        #         op.values["created_at"] = now
+        #         op.values["updated_at"] = now
+        #     elif isinstance(op, Update):
+        #         op.values["updated_at"] = now
 

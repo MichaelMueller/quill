@@ -14,8 +14,10 @@ class Database:
     def __init__(self):        
         self._modules:dict[Type["Module"], "Module"] = {}
 
-    async def register_module(self, module_type:Type["Module"]) -> None:
+    async def register_module(self, module_type:Type["Module"], exists_ok:bool = False) -> None:
         if module_type in self._modules:
+            if exists_ok:
+                return
             raise ValueError("Module already registered")
         module = module_type(self)
         await module.initialize()

@@ -11,10 +11,19 @@ class Module:
     
     def __init__(self, db: "Database"):
         self._db = db
+        self._initialized: bool = False
+    
+    def db(self) -> "Database":
+        return self._db
     
     async def initialize(self) -> None:
+        if not self._initialized:
+            await self._initialize()
+        self._initialized = True
+        
+    async def _initialize(self) -> None:
         pass
-    
+
     async def shutdown(self) -> None:
         pass    
     

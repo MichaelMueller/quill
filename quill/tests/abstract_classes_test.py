@@ -42,7 +42,6 @@ class AbstractClassesTest:
         await module.shutdown()
         await module.on_query(None, True)
                     
-        
 if __name__ == "__main__":
     # Run pytest against *this* file only
     sys.exit(pytest.main([__file__, "--no-cov"]))
