@@ -16,7 +16,7 @@ if TYPE_CHECKING:
     from quill.query import Query
 
 class ReadLogModule(Module):
-
+    TABLE_NAME = "read_logs"
     def __init__(self, db: "Database"):
         super().__init__(db)
 
@@ -35,14 +35,14 @@ class ReadLogModule(Module):
         )
         async for _ in db.execute(create_table): pass
 
-    async def after_execute(self, query:Union[Select, Transaction], inserted_id_or_affected_rows:list[int] | None) -> None:
+    async def after_select(self, query:Select) -> None:
         # devide between write and read log
         if not isinstance(query, Select):
             return
         # process transaction
         values = {}
         excludes = set( ["type", "user_id"] )
-        values["user_id"] = query.user_id
+        values["user_id"] = getattr(query, "user_id", None) # if item has user_id attribute use it
         values["payload"] = query.model_dump_json(exclude=excludes)
         values["timestamp"] = datetime.datetime.now().timestamp()
         
@@ -52,4 +52,4 @@ class ReadLogModule(Module):
             pass
         
     def table_name(self) -> str:
-        return "read_logs"
+        return ReadLogModule.TABLE_NAME

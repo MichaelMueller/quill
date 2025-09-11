@@ -30,9 +30,23 @@ class AbstractClassesTest:
         with pytest.raises(NotImplementedError):
             async for _ in db.execute(Select(table_names=["people"])):
                 pass
-        with pytest.raises(NotImplementedError):
+            
+        with pytest.raises(ValueError):
             async for _ in db.execute(Transaction(items=[])):
                 pass            
+            
+        with pytest.raises(NotImplementedError):
+            await db._has_open_session()          
+            
+        with pytest.raises(NotImplementedError):
+            await db._open_session()
+            
+        with pytest.raises(NotImplementedError):
+            await db._commit()
+            
+        with pytest.raises(NotImplementedError):            
+            await db._close_session()
+            
         with pytest.raises(ValueError):
             async for _ in db.execute(None):
                 pass

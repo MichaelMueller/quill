@@ -23,3 +23,5 @@ from quill.sqlite_database import SqliteDatabase
 from quill.write_log_module import WriteLogModule
 from quill.read_log_module import ReadLogModule
 from quill.user_module import UserModule
+from quill.group_module import GroupModule
+from quill.auth_module import AuthModule

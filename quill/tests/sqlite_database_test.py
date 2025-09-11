@@ -9,7 +9,7 @@ if not project_path in sys.path:
     sys.path.insert(0, project_path)
 from quill import SqliteDatabase, CreateTable, Column, Transaction, Insert, Update, Delete, Select, \
     Comparison, ColumnRef, And, Or, Length, WriteOperation, Query, Database, Module, ReadLogModule, \
-    UserModule
+    UserModule, WriteLogModule, GroupModule, AuthModule
 
 class SqliteDatabaseTest: 
     
@@ -49,10 +49,6 @@ class SqliteDatabaseTest:
                 super().__init__(db)
                 self._hook_count = 0
 
-            async def __call__(self, query:Query, before_execute:bool) -> None:
-                self._hook_count += 1
-                #print(f"Module on op: {op.model_dump_json()}")
-
         await db.register_module(GeneralModule)
         with pytest.raises(ValueError):
             await db.register_module(GeneralModule)
@@ -63,6 +59,10 @@ class SqliteDatabaseTest:
         
         await db.register_module(UserModule)
         await db.register_module(UserModule, exists_ok=True)
+        await db.register_module(WriteLogModule)
+        await db.register_module(GroupModule)
+        await db.register_module(AuthModule)
+        
 
         create_user_table = CreateTable(
             table_name="person",
@@ -147,9 +147,9 @@ class SqliteDatabaseTest:
         affected_rows = [ ai async for ai in user_module.db().execute( Update( table_name="users", values={"email": "bob_new@example.com"}, id=ids[1] ) ) ]
         assert len(affected_rows) >= 1 and affected_rows[0] == 1
         
-        delete = Delete( table_name="users", ids=ids )
+        delete = Delete( table_name="users", ids=ids[:2] )
         affected_rows = [ ai async for ai in user_module.db().execute(delete) ]
-        assert len(affected_rows) >= 1 and affected_rows[0] == 3
+        assert len(affected_rows) >= 1 and affected_rows[0] == 2
         # await user_module.exec( UserModule.Update(id=id_charlie, name="Bobby") )
         # with pytest.raises(ValueError):
         #     await user_module.exec( "invalid query" )  # type: ignore

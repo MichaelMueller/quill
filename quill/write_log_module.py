@@ -39,38 +39,36 @@ class WriteLogModule(Module):
         )
         async for _ in db.execute(create_table): pass
 
-    async def before_execute(self, query:Union[Select, Transaction]) -> None:
-        # devide between write and read log
-        if isinstance(query, Select):
-            return
-        # do not log writes to the read log table
-        read_log_module:ReadLogModule = self._db.module(ReadLogModule)    
+    async def after_execute(self, write_operation:WriteOperation, inserted_id_or_affected_rows:Optional[int]=None) -> list[WriteOperation]:
+        new_ops: list[WriteOperation] = []
         
-        # process transaction
-        list_of_items: list[WriteOperation] = query.items.copy() # make copy as we modify items
-        for i, item in enumerate(list_of_items):
-            if read_log_module and item.table_name == read_log_module.table_name():
-                continue  # do not log writes to the read log table
+        insert_on_write_log = isinstance(write_operation, Insert) and write_operation.table_name == self._table_name()
+        handle_op = write_operation.table_name != ReadLogModule.TABLE_NAME and not insert_on_write_log
+
+        if handle_op:
+
             # create values
             values = {}
-            values["user_id"] = query.user_id
-            values["query"] = item.type
-            values["table_name"] = item.table_name
+            values["user_id"] = getattr(write_operation, "user_id", None) # if write_operation has user_id attribute use it
+            values["query"] = write_operation.type
+            values["table_name"] = write_operation.table_name
             excludes = set( ["table_name", "type", "user_id"] )
             
             # special treatment for delete -> make multiple inserts
             ids: list[int] = []
-            if isinstance(item, Delete):
-                ids.extend(item.ids)
+            if isinstance(write_operation,Insert):
+                ids.append(inserted_id_or_affected_rows)
+            elif isinstance(write_operation, Delete):
+                ids.extend(write_operation.ids)
                 excludes.add("ids")
-            elif hasattr(item, "id"):
-                ids.append(getattr(item, "id"))
+            elif hasattr(write_operation, "id"):
+                ids.append(getattr(write_operation, "id"))
                 excludes.add("id")
             else:
                 ids.append(None)
             
             # final values
-            values["payload"] = item.model_dump_json(exclude=excludes)
+            values["payload"] = write_operation.model_dump_json(exclude=excludes)
             values["timestamp"] = datetime.datetime.now().timestamp()
             
             for id in ids: # for each affected id create a log
@@ -78,8 +76,10 @@ class WriteLogModule(Module):
                                 
                 # append the insert to the end of the transaction
                 insert_query = Insert( table_name=self._table_name(), values=values )
-                query.items.append(insert_query)
+                new_ops.append(insert_query)
 
+        return new_ops
+    
         
     def _table_name(self) -> str:
         return "write_logs"

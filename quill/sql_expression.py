@@ -11,3 +11,5 @@ class SqlExpression(pydantic.BaseModel):
 
     def to_sqlite_sql(self) -> tuple[str, list[Any]]:
         raise NotImplementedError()
+    
+    

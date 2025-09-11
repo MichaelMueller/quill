@@ -9,6 +9,9 @@ from quill.query import Query
 from quill.select import Select
 from quill.transaction import Transaction
 from quill.write_operation import WriteOperation
+from quill.select import Select
+from quill.comparison import Comparison
+from quill.column_ref import ColumnRef
 
 class Database:    
     def __init__(self):        
@@ -31,7 +34,19 @@ class Database:
         await module.shutdown()
         del self._modules[module_type]    
 
+    async def by_id(self, table_name:str, id:int) -> Optional[tuple]:
+        query = Select(table_name=table_name, where=Comparison(left=ColumnRef(name="id"), operator="=", right=id), limit=1)
+        return await self.first(query)
+    
+    async def first(self, query:Select, first_col:bool=False) -> Optional[tuple]:
+        async for row in self.execute(query):
+            if first_col:
+                return row[0]
+            return row
+        return None
+
     async def execute(self, query:Query) -> AsyncGenerator[int | tuple, None]:
+        
         if not isinstance(query, Query):
             raise ValueError(f"query must be an instance of Query, got {query}")
 
@@ -40,6 +55,8 @@ class Database:
         if not isinstance(query, Select):
             # caller can hand out single write operation for convenience -> wrap into transaction
             query = Transaction(items=[query]) if isinstance(query, WriteOperation) else query # shorthand
+            if len(query.items) == 0:
+                raise ValueError("Transaction must have at least one item")
             inserted_id_or_affected_rows = []
 
         # notify modules sorted by priority
@@ -47,25 +64,63 @@ class Database:
         for module in modules:
             await module.before_execute(query)
 
-        # actually run the query
-        if inserted_id_or_affected_rows == None:  # Select
-            async for row in self._execute_select(query):
-                yield row
-        else:
-            # make sure all operations are done before yielding any result
-            async for result in self._execute_transaction(query):
-                inserted_id_or_affected_rows.append(result)
+        # actually execute the query
+        try:
+            close_session = False
+            if not await self._has_open_session():
+                await self._open_session()
+                close_session = True
                 
-            for result in inserted_id_or_affected_rows:
-                yield result
+            if inserted_id_or_affected_rows == None:  # Select
+                async for row in self._execute_select(query):
+                    yield row
             
-        for module in modules:
-            await module.after_execute(query, inserted_id_or_affected_rows)
+                for module in modules:
+                    await module.after_select(query)
+            else:
+                # make sure all operations are done before yielding any result
+                current_op_idx = -1
+                while current_op_idx + 1 < len(query.items): # query.items may change during iteration -> safe while loop!
+                    current_op_idx += 1
+                    write_op = query.items[current_op_idx]
+                    # execute within the current transaction
+                    result = await self._execute_write_operation(write_op)
+                    inserted_id_or_affected_rows.append(result)                
+                    for module in modules:
+                        new_ops = await module.after_execute(query.items[current_op_idx], result)
+                        if len(new_ops) > 0:
+                            query.items.extend(new_ops)           
+                
+                await self._commit()
+                for module in modules:
+                    await module.after_commit(query, inserted_id_or_affected_rows)             
+                
+                # when all is done yield the results
+                for result in inserted_id_or_affected_rows:
+                    yield result
+        finally:
+            if close_session:
+                await self._close_session()
+
+    async def _has_open_session(self) -> bool:
+        raise NotImplementedError()
+    
+    async def _open_session(self) -> None:
+        raise NotImplementedError()
 
     async def _execute_select(self, query:Select) -> AsyncGenerator[tuple, None]:
+        # query items may change during iteration -> safe for loop!
         raise NotImplementedError()
         yield # make sure this is an async generator
     
-    async def _execute_transaction(self, query:Transaction) -> AsyncGenerator[int, None]:
+    async def _execute_write_operation(self, write_operation:WriteOperation) -> int:
         raise NotImplementedError()
-        yield # make sure this is an async generator
+        
+    async def _commit(self) -> None:
+        raise NotImplementedError()
+
+    async def _close_session(self) -> None:
+        raise NotImplementedError()
+    
+    async def close(self) -> None:
+        raise NotImplementedError()

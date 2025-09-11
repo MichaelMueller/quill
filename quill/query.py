@@ -5,5 +5,5 @@ import pydantic
 # local
 from quill.sql_expression import SqlExpression
 
-class Query(SqlExpression):    
-    user_id: Optional[int] = None
+class Query(SqlExpression):
+    pass
