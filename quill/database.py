@@ -53,22 +53,19 @@ class Database:
 
         # basic distinguish between Select and Transaction
         inserted_id_or_affected_rows: list[int] | None = None
+        affected_tables: list[str] = []
         if not isinstance(query, Select):
             # caller can hand out single write operation for convenience -> wrap into transaction
             query = Transaction(items=[query]) if isinstance(query, WriteOperation) else query # shorthand
+            affected_tables = [ op.table_name for op in query.items ]
             if len(query.items) == 0:
                 raise ValueError("Transaction must have at least one item")
             inserted_id_or_affected_rows = []
+        elif isinstance(query, Select):
+            affected_tables = query.table_names
 
-        affected_tables = query.table_names if isinstance(query, Select) else list( set( item.table_name for item in query.items ) )
         # filter modules by surveilled tables
         modules:list[Module] = []
-        for m in self._modules.values():
-            surveilled_tables = m.surveilled_tables()
-            if surveilled_tables is None:
-                continue
-            if len(surveilled_tables) == 0 or any( t in affected_tables for t in surveilled_tables ):
-                modules.append(m)
         modules = sorted(modules, key=lambda m: m.priority(), reverse=True)
         # notify modules sorted by priority
         if jwt != None:

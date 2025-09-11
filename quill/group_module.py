@@ -39,7 +39,17 @@ class GroupModule(Module):
 
         tx = Transaction(items=[create_table, create_user_id_index, create_uid_index])
         async for _ in self._db.execute(tx): pass
-
+    
+    async def before_execute(self, query:Union[Select, Transaction]) -> None:  
+        # validation  
+        if not query.affects_table(GroupModule.TABLE_NAME):
+            return
+        from quill.auth_module import AuthModule    
+        auth_module = self._db.module(AuthModule)
+        if auth_module is not None:
+            current_user:dict = getattr(query, "current_user", None)
+            if current_user is None or current_user.get("admin", False) is not True:
+                raise ValueError("Only admin users can access or modify the users table")            
 
     async def after_execute(self, op:WriteOperation, inserted_id_or_affected_rows:Optional[int]=None) -> list[WriteOperation]:        
         new_ops: list[WriteOperation] = []

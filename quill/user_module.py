@@ -51,10 +51,7 @@ class UserModule(Module):
 
         tx = Transaction(items=[create_table, create_name_index, create_uid_index])
         async for _ in self._db.execute(tx): pass
-    
-    def surveilled_tables(self):
-        return [self.TABLE_NAME] 
-    
+        
     async def before_execute(self, query:Union[Select, Transaction]) -> None:  
         # validation  
         from quill.auth_module import AuthModule    
