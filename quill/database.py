@@ -62,10 +62,12 @@ class Database:
 
         affected_tables = query.table_names if isinstance(query, Select) else list( set( item.table_name for item in query.items ) )
         # filter modules by surveilled tables
-        modules = []
+        modules:list[Module] = []
         for m in self._modules.values():
             surveilled_tables = m.surveilled_tables()
-            if surveilled_tables is None or len(surveilled_tables) == 0 or any( t in affected_tables for t in surveilled_tables ):
+            if surveilled_tables is None:
+                continue
+            if len(surveilled_tables) == 0 or any( t in affected_tables for t in surveilled_tables ):
                 modules.append(m)
         modules = sorted(modules, key=lambda m: m.priority(), reverse=True)
         # notify modules sorted by priority
