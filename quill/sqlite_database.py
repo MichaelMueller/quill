@@ -16,10 +16,7 @@ class SqliteDatabase(Database):
         # state
         self._db = None
         self._in_memory_or_unknown_tmp_file:Optional[bool] = None
-        
-    async def _has_open_session(self) -> bool:
-        return self._db is not None
-    
+            
     async def _open_session(self) -> None:
         if self._in_memory_or_unknown_tmp_file is None:
             self._in_memory_or_unknown_tmp_file = self._db_path == ":memory:" or self._db_path == ""

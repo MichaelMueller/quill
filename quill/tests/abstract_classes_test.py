@@ -36,9 +36,6 @@ class AbstractClassesTest:
                 pass            
             
         with pytest.raises(NotImplementedError):
-            await db._has_open_session()          
-            
-        with pytest.raises(NotImplementedError):
             await db._open_session()
             
         with pytest.raises(NotImplementedError):

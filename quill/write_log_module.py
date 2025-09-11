@@ -49,10 +49,11 @@ class WriteLogModule(Module):
 
             # create values
             values = {}
-            values["user_id"] = getattr(write_operation, "user_id", None) # if write_operation has user_id attribute use it
+            current_user = getattr(write_operation, "current_user", None)
+            values["user_id"] = current_user["id"] if current_user else None # if write_operation has user_id attribute use it
             values["query"] = write_operation.type
             values["table_name"] = write_operation.table_name
-            excludes = set( ["table_name", "type", "user_id"] )
+            excludes = set( ["table_name", "type", "current_user"] )
             
             # special treatment for delete -> make multiple inserts
             ids: list[int] = []

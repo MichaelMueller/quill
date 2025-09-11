@@ -61,8 +61,6 @@ class SqliteDatabaseTest:
         await db.register_module(UserModule, exists_ok=True)
         await db.register_module(WriteLogModule)
         await db.register_module(GroupModule)
-        await db.register_module(AuthModule)
-        
 
         create_user_table = CreateTable(
             table_name="person",

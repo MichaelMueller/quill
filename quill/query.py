@@ -6,4 +6,7 @@ import pydantic
 from quill.sql_expression import SqlExpression
 
 class Query(SqlExpression):
-    pass
+    model_config = {
+        "extra": "allow",
+    }
+

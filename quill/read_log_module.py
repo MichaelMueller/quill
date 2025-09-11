@@ -36,13 +36,11 @@ class ReadLogModule(Module):
         async for _ in db.execute(create_table): pass
 
     async def after_select(self, query:Select) -> None:
-        # devide between write and read log
-        if not isinstance(query, Select):
-            return
-        # process transaction
+        # process select
         values = {}
-        excludes = set( ["type", "user_id"] )
-        values["user_id"] = getattr(query, "user_id", None) # if item has user_id attribute use it
+        excludes = set( ["type", "current_user"] )
+        current_user = getattr(query, "current_user", None)
+        values["user_id"] = current_user["id"] if current_user else None # if query has user_id attribute use it
         values["payload"] = query.model_dump_json(exclude=excludes)
         values["timestamp"] = datetime.datetime.now().timestamp()
         

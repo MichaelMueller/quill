@@ -16,6 +16,7 @@ from quill.column_ref import ColumnRef
 class Database:    
     def __init__(self):        
         self._modules:dict[Type["Module"], "Module"] = {}
+        self._open_executes = 0
 
     async def register_module(self, module_type:Type["Module"], exists_ok:bool = False) -> None:
         if module_type in self._modules:
@@ -65,11 +66,10 @@ class Database:
             await module.before_execute(query)
 
         # actually execute the query
-        try:
-            close_session = False
-            if not await self._has_open_session():
+        try:            
+            if self._open_executes == 0:
                 await self._open_session()
-                close_session = True
+            self._open_executes += 1
                 
             if inserted_id_or_affected_rows == None:  # Select
                 async for row in self._execute_select(query):
@@ -98,12 +98,10 @@ class Database:
                 # when all is done yield the results
                 for result in inserted_id_or_affected_rows:
                     yield result
-        finally:
-            if close_session:
+        finally:            
+            self._open_executes -= 1
+            if self._open_executes == 0:
                 await self._close_session()
-
-    async def _has_open_session(self) -> bool:
-        raise NotImplementedError()
     
     async def _open_session(self) -> None:
         raise NotImplementedError()
