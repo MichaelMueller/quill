@@ -21,13 +21,16 @@ class Module:
     async def initialize(self) -> None:
         if not self._initialized:
             await self._initialize()
-        self._initialized = True
-        
+        self._initialized = True    
+    
     async def _initialize(self) -> None:
         pass
 
     async def shutdown(self) -> None:
         pass    
+    
+    def surveilled_tables(self) -> Optional[list[str]]:
+        return [] # all tables, None == no surveillance
     
     async def before_execute(self, query:Union[Select, Transaction]) -> None:
         pass

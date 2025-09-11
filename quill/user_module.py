@@ -52,14 +52,15 @@ class UserModule(Module):
         tx = Transaction(items=[create_table, create_name_index, create_uid_index])
         async for _ in self._db.execute(tx): pass
     
+    def surveilled_tables(self):
+        return [self.TABLE_NAME] 
+    
     async def before_execute(self, query:Union[Select, Transaction]) -> None:  
         # validation  
         from quill.auth_module import AuthModule    
         auth_module = self._db.module(AuthModule)
         if auth_module is not None:
-            affects_user_table = self.TABLE_NAME in query.table_names if isinstance(query, Select) else len(query.find(self.TABLE_NAME)) > 0
-            if affects_user_table:
-                current_user:dict = getattr(query, "current_user", None)
-                if current_user is None or current_user.get("admin", False) is not True:
-                    raise ValueError("Only admin users can access or modify the users table")
+            current_user:dict = getattr(query, "current_user", None)
+            if current_user is None or current_user.get("admin", False) is not True:
+                raise ValueError("Only admin users can access or modify the users table")
             

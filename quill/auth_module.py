@@ -7,6 +7,9 @@ from pathlib import Path
 # 3rd party
 import jwt
 # local
+if TYPE_CHECKING:
+    from quill.database import Database
+
 from quill import Module, Select, Transaction, GroupModule, UserModule, Database, CreateTable, Column, CreateIndex, ColumnRef, Comparison
 
 
@@ -52,11 +55,10 @@ class AuthModule(Module):
         )
         tx = Transaction(items=[create_config_table, create_user_auth_types_table, create_user_auth_types_table_user_id_index])
         async for _ in self._db.execute(tx): pass
-
-    async def before_execute(self, query:Union[Select, Transaction]) -> None:
-        jwt_str = getattr(query, "jwt", None)
-        if jwt_str is not None:
-            _, user_id = await self.decode_jwt(jwt_str)
+        
+    async def get_current_user(self, jw_token:str) -> None:
+        if jw_token is not None:
+            _, user_id = await self.decode_jwt(jw_token)
             current_user = await self._db.by_id("users", user_id)
             current_user = self._db.module(UserModule).row_as_dict(current_user) if current_user else None
             if current_user is None:
@@ -64,10 +66,16 @@ class AuthModule(Module):
             if current_user["active"] is False:
                 raise ValueError(f"User with id {user_id} is not active")
             
-            setattr(query, "current_user", current_user)
-        else:
-            setattr(query, "current_user", None)
-
+            return current_user
+        return None
+    
+    async def before_execute(self, query:Union[Select, Transaction]) -> None:
+        jwt_str = getattr(query, "jwt", None)
+        current_user = None
+        if jwt_str is not None:
+            current_user = await self.get_current_user(jwt_str)
+        setattr(query, "current_user", current_user)
+            
     async def generate_jwt(self, user_id: int) -> str:
         config = await self._db.first( Select(table_names=[self.CONFIG_TABLE_NAME]) )
         """Generate a signed JWT."""

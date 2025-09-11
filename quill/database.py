@@ -46,7 +46,7 @@ class Database:
             return row
         return None
 
-    async def execute(self, query:Query) -> AsyncGenerator[int | tuple, None]:
+    async def execute(self, query:Query, jwt:Optional[str]=None) -> AsyncGenerator[int | tuple, None]:
         
         if not isinstance(query, Query):
             raise ValueError(f"query must be an instance of Query, got {query}")
@@ -60,8 +60,20 @@ class Database:
                 raise ValueError("Transaction must have at least one item")
             inserted_id_or_affected_rows = []
 
+        affected_tables = query.table_names if isinstance(query, Select) else list( set( item.table_name for item in query.items ) )
+        # filter modules by surveilled tables
+        modules = []
+        for m in self._modules.values():
+            surveilled_tables = m.surveilled_tables()
+            if surveilled_tables is None or len(surveilled_tables) == 0 or any( t in affected_tables for t in surveilled_tables ):
+                modules.append(m)
+        modules = sorted(modules, key=lambda m: m.priority(), reverse=True)
         # notify modules sorted by priority
-        modules = sorted(self._modules.values(), key=lambda m: m.priority(), reverse=True)
+        if jwt != None:
+            from quill.auth_module import AuthModule
+            auth_module:AuthModule = self.module(AuthModule)
+            if auth_module is not None:
+                await auth_module.before_execute(query, jwt)
         for module in modules:
             await module.before_execute(query)
 
