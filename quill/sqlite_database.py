@@ -38,8 +38,7 @@ class SqliteDatabase(Database):
         
     async def _execute_write_operation(self, write_operation:WriteOperation) -> int:
         db = self._db
-        if db is None:
-            raise RuntimeError("Database session is not opened")
+        
         sql, params = write_operation.to_sqlite_sql()
         async with db.execute(sql, params) as cursor:
             if isinstance(write_operation, Insert):
