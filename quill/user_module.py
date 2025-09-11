@@ -41,27 +41,3 @@ class UserModule(Module):
             tx = Transaction(items=[create_table, create_name_index, create_uid_index])
             async for _ in self._db.execute(tx): pass
             self._table_initialized = True
-
-    async def on_query(self, query:"Query", before_execute:bool) -> None:
-        pass
-        # if not before_execute:
-        #     return
-        
-        # if isinstance(query, WriteOperation):
-        #     tx = Transaction(items=[query])
-        # elif isinstance(query, Transaction):
-        #     tx = query
-        # else:
-        #     return
-        # users_ops = tx.find("users")
-        # if len(users_ops) == 0:
-        #     return
-        
-        # now = datetime.datetime.now().timestamp()
-        # for op in users_ops:
-        #     if isinstance(op, Insert):
-        #         op.values["created_at"] = now
-        #         op.values["updated_at"] = now
-        #     elif isinstance(op, Update):
-        #         op.values["updated_at"] = now
-

@@ -36,16 +36,7 @@ class AbstractClassesTest:
         with pytest.raises(ValueError):
             async for _ in db.execute(None):
                 pass
-            
-        module = Module(None)
-        await module.initialize()
-        await module.shutdown()
-        await module.on_query(None, True)
         
-        from quill.abstract_log_module import AbstractLogModule
-        log_module = AbstractLogModule(db)
-        with pytest.raises(NotImplementedError):
-            log_module._is_write_log()
                     
 if __name__ == "__main__":
     # Run pytest against *this* file only

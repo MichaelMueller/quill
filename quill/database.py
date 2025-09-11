@@ -34,34 +34,38 @@ class Database:
     async def execute(self, query:Query) -> AsyncGenerator[int | tuple, None]:
         if not isinstance(query, Query):
             raise ValueError(f"query must be an instance of Query, got {query}")
-                    
-        for module in self._modules.values():
-            await module.on_query(query, before_execute=True)
 
-        if isinstance(query, Select):
+        # basic distinguish between Select and Transaction
+        inserted_id_or_affected_rows: list[int] | None = None
+        if not isinstance(query, Select):
+            # caller can hand out single write operation for convenience -> wrap into transaction
+            query = Transaction(items=[query]) if isinstance(query, WriteOperation) else query # shorthand
+            inserted_id_or_affected_rows = []
+
+        # notify modules sorted by priority
+        modules = sorted(self._modules.values(), key=lambda m: m.priority(), reverse=True)
+        for module in modules:
+            await module.before_execute(query)
+
+        # actually run the query
+        if inserted_id_or_affected_rows == None:  # Select
             async for row in self._execute_select(query):
                 yield row
         else:
-            if isinstance(query, WriteOperation):
-                transaction = Transaction(items=[query])
-            else:
-                transaction = query 
-            inserted_id_or_affected_rows: list[int] = []
             # make sure all operations are done before yielding any result
-            async for result in self._execute_transaction(transaction):
+            async for result in self._execute_transaction(query):
                 inserted_id_or_affected_rows.append(result)
                 
             for result in inserted_id_or_affected_rows:
                 yield result
-        
-        for module in self._modules.values():
-            await module.on_query(query, before_execute=False)
             
+        for module in modules:
+            await module.after_execute(query, inserted_id_or_affected_rows)
+
     async def _execute_select(self, query:Select) -> AsyncGenerator[tuple, None]:
         raise NotImplementedError()
-        yield
+        yield # make sure this is an async generator
     
     async def _execute_transaction(self, query:Transaction) -> AsyncGenerator[int, None]:
         raise NotImplementedError()
-        yield
-    
+        yield # make sure this is an async generator

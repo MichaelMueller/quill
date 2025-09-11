@@ -1,11 +1,12 @@
 # builtin
-from typing import Optional, Union, AsyncGenerator, Callable, Type, Awaitable, Literal, TYPE_CHECKING
+from typing import Optional, Union, AsyncGenerator, Callable, Type, Awaitable, Union, TYPE_CHECKING
 # 3rd party
 import pydantic
 # local
 if TYPE_CHECKING:
     from quill.database import Database
-    from quill.query import Query
+from quill.select import Select
+from quill.transaction import Transaction
 
 class Module:    
     
@@ -27,5 +28,11 @@ class Module:
     async def shutdown(self) -> None:
         pass    
     
-    async def on_query(self, query:"Query", before_execute:bool) -> None:
+    async def before_execute(self, query:Union[Select, Transaction]) -> None:
         pass
+
+    async def after_execute(self, query:Union[Select, Transaction], inserted_id_or_affected_rows:list[int]|None) -> None:
+        pass
+    
+    def priority(self) -> int:
+        return 0

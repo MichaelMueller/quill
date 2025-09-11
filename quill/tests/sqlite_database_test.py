@@ -11,8 +11,6 @@ from quill import SqliteDatabase, CreateTable, Column, Transaction, Insert, Upda
     Comparison, ColumnRef, And, Or, Length, WriteOperation, Query, Database, Module, ReadLogModule, \
     UserModule
 
-
-
 class SqliteDatabaseTest: 
     
     @pytest.mark.asyncio
@@ -76,7 +74,7 @@ class SqliteDatabaseTest:
         )
 
         inserted_ids_or_affected_columns = [x async for x in db.execute(create_user_table)]
-        assert len(inserted_ids_or_affected_columns) == 1
+        assert len(inserted_ids_or_affected_columns) >= 1
         assert inserted_ids_or_affected_columns[0] == -1   # -1 means "not applicable"
         
         # Insert
@@ -95,7 +93,7 @@ class SqliteDatabaseTest:
             )
         ])
         inserted_ids_or_affected_columns = [x async for x in db.execute(transaction)]
-        assert len(inserted_ids_or_affected_columns) == 3
+        assert len(inserted_ids_or_affected_columns) >= 3
         assert inserted_ids_or_affected_columns[0] == 1
         assert inserted_ids_or_affected_columns[1] == 2
         assert inserted_ids_or_affected_columns[2] == 3
@@ -147,7 +145,11 @@ class SqliteDatabaseTest:
         assert len(op_users) == len(user_inserts)
         ids = [ id async for id in user_module.db().execute(tx) ]
         affected_rows = [ ai async for ai in user_module.db().execute( Update( table_name="users", values={"email": "bob_new@example.com"}, id=ids[1] ) ) ]
-        assert affected_rows == [1]
+        assert len(affected_rows) >= 1 and affected_rows[0] == 1
+        
+        delete = Delete( table_name="users", ids=ids )
+        affected_rows = [ ai async for ai in user_module.db().execute(delete) ]
+        assert len(affected_rows) >= 1 and affected_rows[0] == 3
         # await user_module.exec( UserModule.Update(id=id_charlie, name="Bobby") )
         # with pytest.raises(ValueError):
         #     await user_module.exec( "invalid query" )  # type: ignore

@@ -1,9 +1,9 @@
 # builtin
-from typing import Literal
+from typing import Literal, Optional
 # 3rd party
 import pydantic
 # local
 from quill.sql_expression import SqlExpression
 
 class Query(SqlExpression):    
-    pass
+    user_id: Optional[int] = None
