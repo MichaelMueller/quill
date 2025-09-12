@@ -10,7 +10,7 @@ import jwt
 if TYPE_CHECKING:
     from quill.database import Database
 
-from quill import Module, Select, Transaction, GroupModule, UserModule, Database, CreateTable, Column, CreateIndex, ColumnRef, Comparison
+from quill import Module, Select, Transaction, GroupModule, UserModule, Database, CreateTable, Column, CreateIndex, Ref, Comparison
 
 
 class AuthModule(Module):

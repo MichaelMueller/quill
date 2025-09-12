@@ -12,6 +12,7 @@ class Column(SqlExpression):
     data_type: Literal["str", "int", "float", "bool", "bytes"]
     is_nullable: bool = False
     default: Optional[Union[str, int, float, bool, bytes]] = None
+    max_length: Optional[int] = None
 
     def to_sqlite_sql(self) -> tuple[str, list[Any]]:
         sqlite_type = {

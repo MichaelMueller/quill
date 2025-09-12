@@ -4,7 +4,7 @@ import os, datetime, sys
 # 3rd party
 import pydantic
 # local
-from quill import Module, Select, Transaction, UserModule, Database, CreateTable, Column, CreateIndex, WriteOperation, Insert, Update, Delete, Comparison, ColumnRef
+from quill import Module, Select, Transaction, UserModule, Database, CreateTable, Column, CreateIndex, WriteOperation, Insert, Update, Delete, Comparison, Ref
 
 class GroupModule(Module):
     TABLE_NAME = "groups"
@@ -69,12 +69,12 @@ class GroupModule(Module):
                 if "name" in op.values:
                     values["name"] = op.values["name"]
                 if len(values.keys()) > 0:
-                    related_group_select = Select( table_names=[ GroupModule.TABLE_NAME ], columns=["id"], where=Comparison(left=ColumnRef(name="user_id"), operator="=", right=op.id) )
+                    related_group_select = Select( table_names=[ GroupModule.TABLE_NAME ], columns=["id"], where=Comparison(left=Ref(name="user_id"), operator="=", right=op.id) )
                     related_group_id:int = await self._db.first( related_group_select, first_col=True )
                     new_ops.append( Update( table_name=GroupModule.TABLE_NAME, values=values, id=related_group_id ) )
 
             elif isinstance(op, Delete):
-                related_group_selects = Select( table_names=[ GroupModule.TABLE_NAME ], where=Comparison(left=ColumnRef(name="user_id"), operator="IN", right=op.ids) )
+                related_group_selects = Select( table_names=[ GroupModule.TABLE_NAME ], where=Comparison(left=Ref(name="user_id"), operator="IN", right=op.ids) )
                 related_group_ids:list[int] = [ row[0] async for row in self._db.execute(related_group_selects) ]
                 delete_user_group = Delete( table_name=GroupModule.TABLE_NAME, ids=related_group_ids )
                 new_ops.append( delete_user_group )

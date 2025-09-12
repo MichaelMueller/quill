@@ -14,7 +14,7 @@ from quill.condition import Condition
 from quill.and_ import And
 from quill.or_ import Or
 from quill.comparison import Comparison
-from quill.column_ref import ColumnRef
+from quill.ref import Ref
 from quill.length import Length
 from quill.select import Select
 from quill.module import Module
@@ -25,3 +25,11 @@ from quill.read_log_module import ReadLogModule
 from quill.user_module import UserModule
 from quill.group_module import GroupModule
 from quill.auth_module import AuthModule
+
+# new stuff
+from quill.session import Session
+from quill.driver import Driver
+from quill.db_params import DbParams
+from quill.db import Db
+from quill.sqlite_session import SqliteSession
+from quill.sqlite_driver import SqliteDriver

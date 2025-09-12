@@ -6,8 +6,8 @@ import pydantic
 from quill.value_expression import ValueExpression
 from quill.sql_expression import IDENTIFIER_REGEX
 
-class ColumnRef(ValueExpression):
-    type:Literal["column_ref"] = "column_ref"
+class Ref(ValueExpression):
+    type:Literal["ref"] = "ref"
     table_name: Optional[str] = pydantic.Field(default=None, pattern=IDENTIFIER_REGEX)
     name: str = pydantic.Field(..., pattern=IDENTIFIER_REGEX)
     

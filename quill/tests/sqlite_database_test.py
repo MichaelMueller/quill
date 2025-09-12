@@ -8,7 +8,7 @@ project_path = os.path.abspath( os.path.dirname( __file__) + "/../.." )
 if not project_path in sys.path:
     sys.path.insert(0, project_path)
 from quill import SqliteDatabase, CreateTable, Column, Transaction, Insert, Update, Delete, Select, \
-    Comparison, ColumnRef, And, Or, Length, WriteOperation, Query, Database, Module, ReadLogModule, \
+    Comparison, Ref, And, Or, Length, WriteOperation, Query, Database, Module, ReadLogModule, \
     UserModule, WriteLogModule, GroupModule, AuthModule
 
 class SqliteDatabaseTest: 
@@ -113,7 +113,7 @@ class SqliteDatabaseTest:
         select_complex = Select(
             table_names=["person"],
             columns=["*"],
-            where=Comparison(left=ColumnRef(name="age"), operator=">=", right=29),
+            where=Comparison(left=Ref(name="age"), operator=">=", right=29),
             limit=1
         )
         result = [x async for x in db.execute(select_complex)]

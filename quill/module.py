@@ -8,6 +8,7 @@ if TYPE_CHECKING:
 from quill.select import Select
 from quill.transaction import Transaction
 from quill.write_operation import WriteOperation
+from quill.session import Session
 
 class Module:    
     
@@ -28,10 +29,7 @@ class Module:
 
     async def shutdown(self) -> None:
         pass    
-    
-    def surveilled_tables(self) -> Optional[list[str]]:
-        return [] # all tables, None == no surveillance
-    
+        
     async def before_execute(self, query:Union[Select, Transaction]) -> None:
         pass
     
@@ -42,6 +40,18 @@ class Module:
         pass
     
     async def after_commit(self, query:Union[Select, Transaction], inserted_id_or_affected_rows:list[int]|None) -> None:
+        pass
+    
+    async def pre_select(self, select:Select, db_session:Session) -> None:
+        pass
+    
+    async def post_select(self, select:Select, db_session:Session, row:Union[tuple, dict]) -> None:
+        pass    
+        
+    async def pre_execute(self, op:WriteOperation, db_session:Session) -> None:
+        pass
+        
+    async def post_execute(self, op:WriteOperation, db_session:Session, inserted_id_or_affected_rows:Optional[int]=None) -> None:
         pass
     
     def priority(self) -> int:

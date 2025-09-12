@@ -11,7 +11,7 @@ from quill.transaction import Transaction
 from quill.write_operation import WriteOperation
 from quill.select import Select
 from quill.comparison import Comparison
-from quill.column_ref import ColumnRef
+from quill.ref import Ref
 
 class Database:    
     def __init__(self):        
@@ -36,7 +36,7 @@ class Database:
         del self._modules[module_type]    
 
     async def by_id(self, table_name:str, id:int) -> Optional[tuple]:
-        query = Select(table_name=table_name, where=Comparison(left=ColumnRef(name="id"), operator="=", right=id), limit=1)
+        query = Select(table_name=table_name, where=Comparison(left=Ref(name="id"), operator="=", right=id), limit=1)
         return await self.first(query)
     
     async def first(self, query:Select, first_col:bool=False) -> Optional[tuple]:

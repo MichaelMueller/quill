@@ -1,5 +1,5 @@
 # builtin
-from typing import Optional, Literal, Any
+from typing import Optional, Literal, Any, List, Tuple
 # 3rd party
 import pydantic
 # local
@@ -15,8 +15,9 @@ class Select(Query):
     limit: Optional[int] = None
     offset: Optional[int] = None
     
-    order_by: Optional[str] = None
-    order:Optional[Literal["asc","desc"]] = "asc"
+    order_by:Optional[ List[ Tuple[ str, Literal["asc","desc"] ] ] ] = None
+    
+    as_dict: bool = False
                 
     def to_sqlite_sql(self) -> tuple[str, list[Any]]:
         # Build SELECT statement and parameters from SelectData
@@ -28,7 +29,11 @@ class Select(Query):
             sql += " WHERE " + where_sql
             params.extend(where_params)
         if self.order_by:
-            sql += " ORDER BY " + self.order_by + " " + self.order
+            for i, (col, order) in enumerate(self.order_by):
+                if i == 0:
+                    sql += f" ORDER BY {col} {order}"
+                else:
+                    sql += f", {col} {order}"
         if self.limit is not None:
             sql += " LIMIT ?"
             params.append(self.limit)

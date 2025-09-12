@@ -4,11 +4,11 @@ from typing import Optional, Literal, Any
 import pydantic
 # local
 from quill.value_expression import ValueExpression
-from quill.column_ref import ColumnRef
+from quill.ref import Ref
 
 class Length(ValueExpression):
     type:Literal["length"] = "length"
-    column: ColumnRef
+    column: Ref
 
     def to_sqlite_sql(self) -> tuple[str, list[Any]]:
         sql = "LENGTH("

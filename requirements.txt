@@ -1,8 +1,9 @@
-# Python version requirement
 pydantic
+pydantic_settings
+sqlglot
+aiosqlite
+aiopg
+# testing
 pytest
 pytest-cov
 pytest-asyncio
-aiosqlite
-PyJWT[crypto]
-aiohttp

@@ -9,7 +9,7 @@ if not project_path in sys.path:
     sys.path.insert(0, project_path)
 from quill.select import Select
 from quill.comparison import Comparison
-from quill.column_ref import ColumnRef
+from quill.ref import Ref
 from quill.and_ import And
 from quill.or_ import Or
 from quill.length import Length
@@ -23,19 +23,19 @@ class SelectTest:
         condition = And(
             items=[
                 Comparison(
-                    left=ColumnRef(table_name="people", name="age"),
+                    left=Ref(table_name="people", name="age"),
                     operator=">",
                     right=18
                 ),
                 Or(
                     items=[
                         Comparison(
-                            left=ColumnRef(table_name="people", name="name"),
+                            left=Ref(table_name="people", name="name"),
                             operator="LIKE",
                             right="A%"
                         ),
                         Comparison(
-                            left=ColumnRef(name="name"),
+                            left=Ref(name="name"),
                             operator="LIKE",
                             right="B%"
                         )
@@ -59,21 +59,21 @@ class SelectTest:
         where = Or(
             items=[
                 Comparison(
-                left=ColumnRef(name="age"),
+                left=Ref(name="age"),
                 operator="IS",
                 right=None),
                 Comparison(
-                    left=ColumnRef(name="name"),
+                    left=Ref(name="name"),
                     operator="=",
-                    right=ColumnRef(name="surname")
+                    right=Ref(name="surname")
                 ),
                 Comparison(
-                    left=ColumnRef(name="id"),
+                    left=Ref(name="id"),
                     operator="IN",
                     right=[1,2,3]
                 ),
                 Comparison(
-                    left=Length(column=ColumnRef(name="name")),
+                    left=Length(column=Ref(name="name")),
                     operator=">=",
                     right=5
                 )

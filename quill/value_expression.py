@@ -6,4 +6,4 @@ import pydantic
 from quill.sql_expression import SqlExpression
 
 class ValueExpression(SqlExpression):
-    type:Literal["column_ref"] = "column_ref"
+    type:Literal["ref"] = "ref"
