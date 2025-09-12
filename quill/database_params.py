@@ -3,7 +3,7 @@ from typing import Literal
 # 3rd party
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
-class DbParams(BaseSettings):
+class DatabaseParams(BaseSettings):
     model_config = SettingsConfigDict(
         env_file=".env",            # optional: load from .env file
         env_file_encoding="utf-8",

@@ -6,7 +6,7 @@ import pytest
 project_path = os.path.abspath( os.path.dirname( __file__) + "/../.." )
 if not project_path in sys.path:
     sys.path.insert(0, project_path)
-from quill import Database, DbParams, Module, Transaction, CreateTable, Column, CreateIndex, RenameTable, DropIndex, DropTable, \
+from quill import Database, DatabaseParams, Module, Transaction, CreateTable, Column, CreateIndex, RenameTable, DropIndex, DropTable, \
     Insert, Update, Delete, Select, Comparison, Ref
 
 class DatabaseTest: 
@@ -14,10 +14,10 @@ class DatabaseTest:
     @pytest.mark.asyncio
     async def test(self):       
         
-        params = DbParams(driver="sqlite", db_url=":memory:")
+        params = DatabaseParams(driver="sqlite", db_url=":memory:")
         await self._run_with_different_params(params)
         
-        params = DbParams(driver="sqlite", db_url="")
+        params = DatabaseParams(driver="sqlite", db_url="")
         await self._run_with_different_params(params)
         
         # known file-based db
@@ -26,13 +26,13 @@ class DatabaseTest:
             if os.path.exists(temp_db):
                 os.remove(temp_db)
             os.makedirs(os.path.dirname(temp_db), exist_ok=True)
-            params = DbParams(driver="sqlite", db_url=temp_db)
+            params = DatabaseParams(driver="sqlite", db_url=temp_db)
             await self._run_with_different_params(params)
         finally:
             if os.path.exists(temp_db):
                 os.remove(temp_db)
 
-    async def _run_with_different_params(self, params:DbParams):
+    async def _run_with_different_params(self, params:DatabaseParams):
         try:
             db = Database(params)
             await self._run(db)
