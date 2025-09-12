@@ -15,15 +15,11 @@ class Column(SqlExpression):
     max_length: Optional[int] = None
 
     def to_sql(self, dialect:SUPPORTED_DIALECTS="sqlite") -> tuple[str, list[Any]]:
-        sqlite_type = {
-            "str": "TEXT",
-            "int": "INTEGER",
-            "float": "REAL",
-            "bool": "BOOLEAN",
-            "bytes": "BLOB"
-        }.get(self.data_type)
+        type_map = {"str": "TEXT","int": "INTEGER","float": "REAL","bool": "BOOLEAN","bytes": "BLOB"}
+
+        type_ = type_map.get(self.data_type)
         args = []
-        sql = f"{self.name} {sqlite_type}"
+        sql = f"{self.name} {type_}"
         if self.name == "id":
             sql += " PRIMARY KEY AUTOINCREMENT"
         else:

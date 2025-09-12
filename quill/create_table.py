@@ -13,13 +13,8 @@ class CreateTable(WriteOperation):
     if_not_exists: bool = False
 
     def to_sql(self, dialect:SUPPORTED_DIALECTS="sqlite") -> tuple[str, list[Any]]:
-        SQLITE_TYPE_MAP = {
-            str: "TEXT",
-            int: "INTEGER",
-            float: "REAL",
-            bool: "INTEGER",  # SQLite does not have a separate Boolean storage class
-            bytes: "BLOB",
-        }
+        
+                
         # Build CREATE TABLE statement and parameters from CreateTableData
         sql = "CREATE TABLE "
         if self.if_not_exists:
