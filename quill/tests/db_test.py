@@ -6,7 +6,7 @@ import pytest
 project_path = os.path.abspath( os.path.dirname( __file__) + "/../.." )
 if not project_path in sys.path:
     sys.path.insert(0, project_path)
-from quill import Db, DbParams, Module, Transaction, CreateTable, Column, CreateIndex, RenameTable, DropIndex, DropTable, \
+from quill import Database, DbParams, Module, Transaction, CreateTable, Column, CreateIndex, RenameTable, DropIndex, DropTable, \
     Insert, Update, Delete, Select, Comparison, Ref
 
 class DbTest: 
@@ -34,15 +34,15 @@ class DbTest:
 
     async def _run_with_different_params(self, params:DbParams):
         try:
-            db = Db(params)
+            db = Database(params)
             await self._run(db)
         finally:
             await db.close()
             
-    async def _run(self, db:Db):
+    async def _run(self, db:Database):
         # MODULE tests
         class MyModule1(Module):
-            def __init__(self, db: "Db", name:str):
+            def __init__(self, db: "Database", name:str):
                 super().__init__(db)
                 
             async def _initialize(self) -> None:
@@ -140,7 +140,7 @@ class DbTest:
             {"id":4, "uid":"user4", "name":"User Four", "email":"user4@example.com"}
         ]
 
-    async def _delete_users_table(self, db:Db, table_name:str):
+    async def _delete_users_table(self, db:Database, table_name:str):
         drop_index = DropIndex(table_name=table_name, columns=["uid"], if_exists=True)
         drop_index2 = DropIndex(table_name=table_name, columns=["name"], if_exists=True)
         drop_table = DropTable(table_name=table_name, if_exists=True)
@@ -148,7 +148,7 @@ class DbTest:
         inserted_ids_and_affected_rows = [ r async for r in db.execute(tx) ]
         assert inserted_ids_and_affected_rows == [ None, None, None ]
         
-    async def _create_users_table(self, db:Db):
+    async def _create_users_table(self, db:Database):
         users_table_name = "users"
         create_users_table = CreateTable(
             table_name=users_table_name,

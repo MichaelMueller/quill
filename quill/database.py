@@ -12,9 +12,9 @@ from quill.select import Select
 from quill.comparison import Comparison
 from quill.ref import Ref
 from quill.driver import Driver
-from quill.db_params import DbParams
+from quill.database_params import DbParams
 
-class Db:    
+class Database:    
     def __init__(self, db_params: Optional[DbParams] = None):        
         self._db_params = db_params or DbParams()
         self._modules:dict[Type["Module"], "Module"] = {}

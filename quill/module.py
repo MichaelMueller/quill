@@ -4,7 +4,7 @@ from typing import Optional, Union, AsyncGenerator, Callable, Type, Awaitable, U
 import pydantic
 # local
 if TYPE_CHECKING:
-    from quill.db import Db
+    from quill.database import Database
 from quill.select import Select
 from quill.transaction import Transaction
 from quill.write_operation import WriteOperation
