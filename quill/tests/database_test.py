@@ -62,56 +62,27 @@ class DatabaseTest:
         
         # DML Tests
         await self._create_users_table(db)
-        insert = Insert(
-            table_name="users",
-            values={
-                "uid": "user1",
-                "name": "User One",
-                "email": "user1@example.com"
-            }
-        )
-        inserted_ids_and_affected_rows = [ r async for r in db.execute(insert) ]
-        assert inserted_ids_and_affected_rows == [ 1 ]
-        
-        insert2 = Insert(
-            table_name="users",
-            values={
-                "uid": "user2",
-                "name": "User Two",
-                "email": "user2@example.com"
-            }
-        )
-        inserted_ids_and_affected_rows = [ r async for r in db.execute(insert2) ]
-        assert inserted_ids_and_affected_rows == [ 2 ]
-        
-        insert3 = Insert(
-            table_name="users",
-            values={
-                "uid": "user3",
-                "name": "User Three",
-                "email": "user3@example.com"
-            }
-        )
-        inserted_ids_and_affected_rows = [ r async for r in db.execute(insert3) ]
-        assert inserted_ids_and_affected_rows == [ 3 ]
+        users = [
+            {"id":1, "uid":"user1", "name":"User One", "email":"user1_updated@example.com"},
+            {"id":2, "uid":"user2", "name":"User Two", "email":"user2@example.com"},
+            {"id":3, "uid":"user3", "name":"User Three", "email":"user3@example.com"},
+            {"id":4, "uid":"user4", "name":"User Four", "email":"user4@example.com"}
+        ]
+        for user in users:
+            insert = Insert(
+                table_name="users",
+                values=user
+            )
+            inserted_ids_and_affected_rows = [ r async for r in db.execute(insert) ]
+            assert inserted_ids_and_affected_rows == [ user["id"] ]
 
-        insert4 = Insert(
-            table_name="users",
-            values={
-                "uid": "user4",
-                "name": "User Four",
-                "email": "user4@example.com"
-            }
-        )
-        inserted_ids_and_affected_rows = [ r async for r in db.execute(insert4) ]
-        assert inserted_ids_and_affected_rows == [ 4 ]
-
+        users[0]["email"] = "user1_updated@example.com"
         update = Update(
             table_name="users",
             values={
-                "email": "user1_updated@example.com"
+                "email": users[0]["email"]
             },
-            id=1
+            id=users[0]["id"]
         )
         inserted_ids_and_affected_rows = [ r async for r in db.execute(update) ]
         assert inserted_ids_and_affected_rows == [ 1 ]
@@ -122,23 +93,29 @@ class DatabaseTest:
         )
         inserted_ids_and_affected_rows = [ r async for r in db.execute(delete) ]
         assert inserted_ids_and_affected_rows == [ 1 ]
+        # Remove user at index 1 (which is user3)
+        users.pop(1)
         
         # SELECT tests
+        user_rows = [ (user["id"], user["uid"], user["name"], user["email"]) for user in users ]
         select = Select(
             table_names=["users"],
             where=Comparison(left=Ref(name="id"), operator=">", right=0),
             order_by=[("id", "asc")]
         )
         user_rows:list[tuple] = [ r async for r in db.execute(select) ]
-        assert user_rows == [ (1, "user1", "User One", "user1_updated@example.com"), (3, "user3", "User Three", "user3@example.com"), (4, "user4", "User Four", "user4@example.com") ]
+        expected_data = user_rows
+        assert user_rows == expected_data
         
         select.as_dict = True
         user_rows_dicts:list[dict] = [ r async for r in db.execute( select ) ]
-        assert user_rows_dicts == [
-            {"id":1, "uid":"user1", "name":"User One", "email":"user1_updated@example.com"},
-            {"id":3, "uid":"user3", "name":"User Three", "email":"user3@example.com"},
-            {"id":4, "uid":"user4", "name":"User Four", "email":"user4@example.com"}
-        ]
+        assert user_rows_dicts == users
+        
+        first_user = await db.first_row("users")
+        assert first_user == user_rows[0]
+        
+        first_user_id = await db.by_id("users", users[1]["id"])
+        assert first_user_id == user_rows[1]
 
     async def _delete_users_table(self, db:Database, table_name:str):
         drop_index = DropIndex(table_name=table_name, columns=["uid"], if_exists=True)

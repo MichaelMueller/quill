@@ -45,12 +45,14 @@ class Database:
         query = Select(table_names=[table_name], where=Comparison(left=Ref(name="id"), operator="=", right=id), limit=1)
         return await self.one(query)
 
-    async def one(self, query:Select, first_col:bool=False) -> Optional[tuple]:
-        async for row in self.execute(query):
-            if first_col:
-                return row[0]
-            return row
-        return None
+    async def one(self, query:Select, first_col:bool=False) -> Union[ dict, tuple, int, str, float, bool, None]:
+        row: Optional[Union[tuple, dict]] = None
+        async for curr_row in self.execute(query):
+            if row is None:
+                row = curr_row
+        if row is not None and first_col:
+            return row[0] if isinstance(row, tuple) else next(iter(row.values()))
+        return row
     
     async def driver(self) -> Driver:
         if self._driver is None:
