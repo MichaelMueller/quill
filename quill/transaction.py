@@ -1,5 +1,5 @@
 # builtin
-from typing import Literal, Optional, Type
+from typing import Literal, Optional, Type,Any
 # 3rd party
 import pydantic
 # local
@@ -18,6 +18,10 @@ class Transaction(Query):
             args.extend(item_args)
 
         return sql.strip(), args
+    
+    
+    def to_postgres_sql(self) -> tuple[str, list[Any]]:
+        return self.to_sqlite_sql()
 
     def find(self, table_name: str, operation_type: Optional[Type[WriteOperation]] = None) -> list[WriteOperation]:
         return [item for item in self.items if item.table_name == table_name and (operation_type is None or isinstance(item, operation_type))]
