@@ -4,7 +4,7 @@ from typing import Optional, Union, AsyncGenerator, Callable, Type, Awaitable, U
 import pydantic
 # local
 if TYPE_CHECKING:
-    from quill.database import Database
+    from quill.db import Db
 from quill.select import Select
 from quill.transaction import Transaction
 from quill.write_operation import WriteOperation
@@ -29,19 +29,7 @@ class Module:
 
     async def shutdown(self) -> None:
         pass    
-        
-    async def before_execute(self, query:Union[Select, Transaction]) -> None:
-        pass
-    
-    async def after_execute(self, write_operation:WriteOperation, inserted_id_or_affected_rows:Optional[int]=None) -> list[WriteOperation]:
-        return []
-
-    async def after_select(self, query:Select) -> None:
-        pass
-    
-    async def after_commit(self, query:Union[Select, Transaction], inserted_id_or_affected_rows:list[int]|None) -> None:
-        pass
-    
+            
     async def pre_select(self, select:Select, db_session:Session) -> None:
         pass
     

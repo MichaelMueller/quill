@@ -1,2 +1,7 @@
 [run]
 omit = quill/tests/*
+    quill/tests/**
+    tmp/*
+    tmp/**
+    var/*
+    var/**

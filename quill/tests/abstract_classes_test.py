@@ -8,7 +8,6 @@ project_path = os.path.abspath( os.path.dirname( __file__) + "/../.." )
 if not project_path in sys.path:
     sys.path.insert(0, project_path)
 from quill.condition import Condition
-from quill.database import Database
 from quill.sql_expression import SqlExpression
 from quill.select import Select
 from quill.transaction import Transaction
@@ -26,27 +25,6 @@ class AbstractClassesTest:
         with pytest.raises(NotImplementedError):
             SqlExpression(type="none").to_sqlite_sql()
             
-        db = Database()
-        with pytest.raises(NotImplementedError):
-            async for _ in db.execute(Select(table_names=["people"])):
-                pass
-            
-        with pytest.raises(ValueError):
-            async for _ in db.execute(Transaction(items=[])):
-                pass            
-            
-        with pytest.raises(NotImplementedError):
-            await db._open_session()
-            
-        with pytest.raises(NotImplementedError):
-            await db._commit()
-            
-        with pytest.raises(NotImplementedError):            
-            await db._close_session()
-            
-        with pytest.raises(ValueError):
-            async for _ in db.execute(None):
-                pass
         
                     
 if __name__ == "__main__":

@@ -18,15 +18,6 @@ from quill.ref import Ref
 from quill.length import Length
 from quill.select import Select
 from quill.module import Module
-from quill.database import Database
-from quill.sqlite_database import SqliteDatabase
-from quill.write_log_module import WriteLogModule
-from quill.read_log_module import ReadLogModule
-from quill.user_module import UserModule
-from quill.group_module import GroupModule
-from quill.auth_module import AuthModule
-
-# new stuff
 from quill.session import Session
 from quill.driver import Driver
 from quill.db_params import DbParams

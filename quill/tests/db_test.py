@@ -6,7 +6,7 @@ import pytest
 project_path = os.path.abspath( os.path.dirname( __file__) + "/../.." )
 if not project_path in sys.path:
     sys.path.insert(0, project_path)
-from quill import Db, DbParams, SqliteDriver, Transaction, CreateTable, Column, CreateIndex, RenameTable, DropIndex, DropTable, \
+from quill import Db, DbParams, Module, Transaction, CreateTable, Column, CreateIndex, RenameTable, DropIndex, DropTable, \
     Insert, Update, Delete, Select, Comparison, Ref
 
 class DbTest: 
@@ -40,6 +40,19 @@ class DbTest:
             await db.close()
             
     async def _run(self, db:Db):
+        # MODULE tests
+        class MyModule1(Module):
+            def __init__(self, db: "Db", name:str):
+                super().__init__(db)
+                
+            async def _initialize(self) -> None:
+                pass
+        
+        await db.register_module(MyModule1, args={"name":"module1"})    
+        my_module1 = db.module(MyModule1)
+        assert my_module1 is not None
+        assert isinstance(my_module1, MyModule1)
+        
         # DDL Tests
         await self._create_users_table(db)
         rename_table = RenameTable(table_name="users", new_table_name="app_users")        

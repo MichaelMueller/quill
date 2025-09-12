@@ -49,8 +49,7 @@ class SelectTest:
             where=condition,
             limit=10,
             offset=0,
-            order_by="name",
-            order="asc"
+            order_by=[ ("name", "asc") ]
         )
         sql, params = select.to_sqlite_sql()
         assert sql.lower() == "select name, age from people where people.age > ? and (people.name like ? or name like ?) order by name asc limit ? offset ?"
