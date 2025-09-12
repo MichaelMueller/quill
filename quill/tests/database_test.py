@@ -9,7 +9,7 @@ if not project_path in sys.path:
 from quill import Database, DbParams, Module, Transaction, CreateTable, Column, CreateIndex, RenameTable, DropIndex, DropTable, \
     Insert, Update, Delete, Select, Comparison, Ref
 
-class DbTest: 
+class DatabaseTest: 
     
     @pytest.mark.asyncio
     async def test(self):       
