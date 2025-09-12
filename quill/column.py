@@ -3,7 +3,7 @@ from typing import Optional, Literal, Union, Type, Any
 # 3rd party
 import pydantic
 # local
-from quill.sql_expression import SqlExpression, IDENTIFIER_REGEX
+from quill.sql_expression import SqlExpression, IDENTIFIER_REGEX, SUPPORTED_DIALECTS
 
 class Column(SqlExpression):
     type:Literal["column"] = "column"
@@ -14,7 +14,7 @@ class Column(SqlExpression):
     default: Optional[Union[str, int, float, bool, bytes]] = None
     max_length: Optional[int] = None
 
-    def to_sqlite_sql(self) -> tuple[str, list[Any]]:
+    def to_sql(self, dialect:SUPPORTED_DIALECTS="sqlite") -> tuple[str, list[Any]]:
         sqlite_type = {
             "str": "TEXT",
             "int": "INTEGER",

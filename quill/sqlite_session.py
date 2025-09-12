@@ -24,7 +24,7 @@ class SqliteSession(Session):
 
     async def select(self, select:Select) -> AsyncGenerator[tuple | dict, None]:
         db = self._connection
-        sql, params = select.to_sqlite_sql()
+        sql, params = select.to_sql(dialect="sqlite")
         async with db.execute(sql, params) as cursor:
             column_names:list[str] = None
             if select.as_dict:
@@ -35,7 +35,7 @@ class SqliteSession(Session):
     async def write(self, write_operation:WriteOperation) -> Optional[int]:
         db = self._connection
         
-        sql, params = write_operation.to_sqlite_sql()
+        sql, params = write_operation.to_sql(dialect="sqlite")
         async with db.execute(sql, params) as cursor:
             if isinstance(write_operation, Insert):
                 return cursor.lastrowid

@@ -5,12 +5,13 @@ import pydantic
 # local
 from quill.value_expression import ValueExpression
 from quill.ref import Ref
+from quill.sql_expression import SUPPORTED_DIALECTS
 
 class Length(ValueExpression):
     type:Literal["length"] = "length"
     column: Ref
 
-    def to_sqlite_sql(self) -> tuple[str, list[Any]]:
+    def to_sql(self, dialect:SUPPORTED_DIALECTS="sqlite") -> tuple[str, list[Any]]:
         sql = "LENGTH("
         sql += self.column.name + ")"
         params: list[Any] = []

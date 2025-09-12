@@ -5,14 +5,14 @@ import pydantic
 # local
 from quill.write_operation import WriteOperation
 from quill.column import Column
-from quill.sql_expression import IDENTIFIER_REGEX
+from quill.sql_expression import IDENTIFIER_REGEX, SUPPORTED_DIALECTS
 
 class CreateTable(WriteOperation):
     type:Literal["create_table"] = "create_table"
     columns: list[Column]
     if_not_exists: bool = False
 
-    def to_sqlite_sql(self) -> tuple[str, list[Any]]:
+    def to_sql(self, dialect:SUPPORTED_DIALECTS="sqlite") -> tuple[str, list[Any]]:
         SQLITE_TYPE_MAP = {
             str: "TEXT",
             int: "INTEGER",
@@ -29,7 +29,7 @@ class CreateTable(WriteOperation):
         cols = self.columns.copy()
         cols.insert(0, Column(name="id", data_type="int"))
         for i, col in enumerate(cols):
-            col_sql, col_params = col.to_sqlite_sql()
+            col_sql, col_params = col.to_sql()
             sql += (", " if i > 0 else "") + col_sql
             params.extend(col_params)
         sql += ")"

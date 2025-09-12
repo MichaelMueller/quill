@@ -4,13 +4,14 @@ from typing import Optional, Literal, Any
 import pydantic
 # local
 from quill.write_operation import WriteOperation
+from quill.sql_expression import SUPPORTED_DIALECTS
 
 class Update(WriteOperation):
     type:Literal["update"] = "update"    
     values: dict[str, Optional[Any]]
     id:int
             
-    def to_sqlite_sql(self) -> tuple[str, list[Any]]:
+    def to_sql(self, dialect:SUPPORTED_DIALECTS="sqlite") -> tuple[str, list[Any]]:
         sql = ""
         for col in self.values.keys():
             if col == "id":

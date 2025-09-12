@@ -1,6 +1,5 @@
 pydantic
 pydantic_settings
-sqlglot
 aiosqlite
 aiopg
 # testing

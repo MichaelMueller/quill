@@ -4,12 +4,12 @@ from typing import Any, Literal
 import pydantic
 # local
 from quill.write_operation import WriteOperation
-from quill.sql_expression import IDENTIFIER_REGEX
+from quill.sql_expression import IDENTIFIER_REGEX, SUPPORTED_DIALECTS
 
 class DropTable(WriteOperation):
     type:Literal["drop_table"] = "drop_table"
     if_exists: bool = False
     
-    def to_sqlite_sql(self) -> tuple[str, list[Any]]:
+    def to_sql(self, dialect:SUPPORTED_DIALECTS="sqlite") -> tuple[str, list[Any]]:
         sql = f"DROP TABLE {'IF EXISTS' if self.if_exists else ''} {self.table_name}"
         return sql, []

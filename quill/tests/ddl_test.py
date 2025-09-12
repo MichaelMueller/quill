@@ -29,7 +29,7 @@ class DdlTest:
             ],
             if_not_exists=True
         )
-        sql, params = create_table.to_sqlite_sql()
+        sql, params = create_table.to_sql()
         assert sql.lower() == "create table if not exists my_table (id integer primary key autoincrement, name text not null default 'user', age integer default 18, admin boolean default 0, bio text default null)"
         assert params == []
         
@@ -38,7 +38,7 @@ class DdlTest:
             table_name="my_table",
             new_table_name="new_table"
         )
-        sql, params = rename_table.to_sqlite_sql()
+        sql, params = rename_table.to_sql()
         assert sql.lower() == "alter table my_table rename to new_table"
         assert params == []
 
@@ -47,7 +47,7 @@ class DdlTest:
             table_name="my_table",
             if_exists=True
         )
-        sql, params = drop_table.to_sqlite_sql()
+        sql, params = drop_table.to_sql()
         assert sql.lower() == "drop table if exists my_table"
         assert params == []
 
@@ -58,7 +58,7 @@ class DdlTest:
             unique=False,
             if_not_exists=True
         )
-        sql, params = create_index.to_sqlite_sql()
+        sql, params = create_index.to_sql()
         assert sql.lower() == "create index if not exists my_table_name_idx on my_table (name)"
         assert params == []
         
@@ -68,7 +68,7 @@ class DdlTest:
             unique=True,
             if_not_exists=False
         )
-        sql, params = create_unique_index.to_sqlite_sql()
+        sql, params = create_unique_index.to_sql()
         assert sql.lower() == "create unique index my_table_name_age_uidx on my_table (name, age)"
         assert params == []
 
@@ -79,7 +79,7 @@ class DdlTest:
             unique=True,
             if_exists=True
         )
-        sql, params = drop_index.to_sqlite_sql()
+        sql, params = drop_index.to_sql()
         assert sql.lower() == "drop index if exists my_table_name_age_uidx"
         assert params == []
            

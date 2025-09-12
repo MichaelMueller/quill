@@ -51,7 +51,7 @@ class SelectTest:
             offset=0,
             order_by=[ ("name", "asc") ]
         )
-        sql, params = select.to_sqlite_sql()
+        sql, params = select.to_sql()
         assert sql.lower() == "select name, age from people where people.age > ? and (people.name like ? or name like ?) order by name asc limit ? offset ?"
         assert params == [18, "A%", "B%", 10, 0]
                 
@@ -83,7 +83,7 @@ class SelectTest:
             columns=["id", "name", "surname", "age"],
             where=where
         )
-        sql, params = select.to_sqlite_sql()
+        sql, params = select.to_sql()
         assert sql.lower() == "select id, name, surname, age from people where age is ? or name = surname or id in (?, ?, ?) or length(name) >= ?"
         assert params == [None, 1, 2, 3, 5]
 

@@ -4,12 +4,13 @@ from typing import Optional, Literal, Any
 import pydantic
 # local
 from quill.manage_index import ManageIndex
+from quill.sql_expression import SUPPORTED_DIALECTS
 
 class CreateIndex(ManageIndex):
     type:Literal["create_index"] = "create_index"
     if_not_exists: bool = False
     
-    def to_sqlite_sql(self) -> tuple[str, list[Any]]:
+    def to_sql(self, dialect:SUPPORTED_DIALECTS="sqlite") -> tuple[str, list[Any]]:
         index_name = self._index_name()
 
         sql = "CREATE "

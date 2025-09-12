@@ -25,7 +25,7 @@ class DmlTest:
                 "age": 30
             }
         )
-        sql, params = insert.to_sqlite_sql()
+        sql, params = insert.to_sql()
         assert sql.lower() == "insert into my_table (name, age) values (?, ?)"
         assert params == ["John", 30]
         
@@ -34,7 +34,7 @@ class DmlTest:
             table_name="my_table",
             ids=[1, 2, 3]
         )
-        sql, params = delete.to_sqlite_sql()
+        sql, params = delete.to_sql()
         assert sql.lower() == "delete from my_table where id in (?, ?, ?)"
         assert params == [1, 2, 3]
         
@@ -47,7 +47,7 @@ class DmlTest:
                 "age": 25
             }
         )
-        sql, params = update.to_sqlite_sql()
+        sql, params = update.to_sql()
         assert sql.lower() == "update my_table set name = ?, age = ? where id = ?"
         assert params == ["Jane", 25, 1]   
         
@@ -57,7 +57,7 @@ class DmlTest:
                 id=1,
                 values={"id":2}
             )
-            sql, params = update.to_sqlite_sql()
+            sql, params = update.to_sql()
         
     def test_transaction(self):
         transaction = Transaction(
@@ -82,7 +82,7 @@ class DmlTest:
                 )
             ]
         )
-        sql, params = transaction.to_sqlite_sql()
+        sql, params = transaction.to_sql()
         assert sql.lower() == "insert into my_table (name, age) values (?, ?); update my_table set age = ? where id = ?; delete from my_table where id in (?, ?);"
         assert params == ["Alice", 28, 29, 1, 2, 3]
         

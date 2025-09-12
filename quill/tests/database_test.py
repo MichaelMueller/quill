@@ -7,17 +7,17 @@ project_path = os.path.abspath( os.path.dirname( __file__) + "/../.." )
 if not project_path in sys.path:
     sys.path.insert(0, project_path)
 from quill import Database, DatabaseParams, Module, Transaction, CreateTable, Column, CreateIndex, RenameTable, DropIndex, DropTable, \
-    Insert, Update, Delete, Select, Comparison, Ref
+    Insert, Update, Delete, Select, Comparison, Ref, SqliteDriverParams
 
 class DatabaseTest: 
     
     @pytest.mark.asyncio
     async def test(self):       
         
-        params = DatabaseParams(driver="sqlite", db_url=":memory:")
+        params = DatabaseParams(driver="sqlite", driver_params=SqliteDriverParams(database_file=":memory:"))
         await self._run_with_different_params(params)
-        
-        params = DatabaseParams(driver="sqlite", db_url="")
+
+        params = DatabaseParams(driver="sqlite", driver_params=SqliteDriverParams(database_file=""))
         await self._run_with_different_params(params)
         
         # known file-based db
@@ -26,7 +26,7 @@ class DatabaseTest:
             if os.path.exists(temp_db):
                 os.remove(temp_db)
             os.makedirs(os.path.dirname(temp_db), exist_ok=True)
-            params = DatabaseParams(driver="sqlite", db_url=temp_db)
+            params = DatabaseParams(driver="sqlite", driver_params=SqliteDriverParams(database_file=temp_db))
             await self._run_with_different_params(params)
         finally:
             if os.path.exists(temp_db):
