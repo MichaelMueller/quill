@@ -17,7 +17,7 @@ class CreateIndex(ManageIndex):
         if self.unique:
             sql += "UNIQUE "
         sql += "INDEX "
-        if self.if_not_exists:
+        if self.if_not_exists and dialect in ("sqlite", "postgres"):
             sql += "IF NOT EXISTS "
         sql += index_name + " ON " + self.table_name + " ("
         sql += ", ".join(self.columns)

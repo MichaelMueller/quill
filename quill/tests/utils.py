@@ -30,6 +30,7 @@ def start_container(name: str, image: str, env: dict, ports: dict):
     args.append(image)
 
     try:
+        print("Starting container:", " ".join(args))
         subprocess.run(args, check=True, capture_output=True)
     except FileNotFoundError:
         pytest.skip("Docker is not installed or not in PATH")
@@ -69,22 +70,27 @@ def _postgres_container() -> Generator[PostgresDriverParams, None, None]:
 
 
 @pytest.fixture(scope="session")
-def mysql_container():
+def mysql_container() -> Generator[MysqlDriverParams, None, None]:
+    yield from _mysql_container()
+
+def _mysql_container() -> Generator[MysqlDriverParams, None, None]:
     try:
         name = "pytest-mysql"        
         stop_container(name)
-        image = "mysql:8"
+        image = "mysql:latest"
         env = {
             "MYSQL_ROOT_PASSWORD": "secret",
             "MYSQL_DATABASE": "testdb",
             "MYSQL_USER": "testuser",
             "MYSQL_PASSWORD": "testpass",
+            "MYSQL_PORT": "3306"
         }
         ports = {23306: 3306}
 
         start_container(name, image, env, ports)
         wait_for_port("localhost", 23306)
-    
+        
+        time.sleep(15)
         yield MysqlDriverParams(
             host="localhost",
             port=23306,
@@ -96,6 +102,26 @@ def mysql_container():
         stop_container(name)
 
 async def sandbox():
+    for params in _mysql_container():
+        print(params)
+        import aiomysql
+        loop = asyncio.get_event_loop()
+        pool:aiomysql.Pool = await aiomysql.create_pool(host=params.host,
+            port=params.port,
+            user=params.user,
+            password=params.password,
+            db=params.database,
+            minsize=params.pool_min_size,
+            maxsize=params.pool_max_size,
+            loop=loop
+        )
+        async with pool.acquire() as conn:
+            async with conn.cursor() as cursor:
+                await cursor.execute("SELECT 1;")
+                rows = await cursor.fetchall()
+                print(rows)
+    
+    return 
     # for manual testing
     for params in _postgres_container():
         print(params)        

@@ -75,7 +75,8 @@ class Database:
                 from quill.postgres_driver import PostgresDriver
                 self._driver = PostgresDriver(self._db_params.driver)
             elif isinstance(self._db_params.driver, MysqlDriverParams):
-                raise NotImplementedError()
+                from quill.mysql_driver import MysqlDriver
+                self._driver = MysqlDriver(self._db_params.driver)
             elif isinstance(self._db_params.driver, SqliteDriverParams):
                 from quill.sqlite_driver import SqliteDriver
                 self._driver = SqliteDriver(self._db_params.driver)
