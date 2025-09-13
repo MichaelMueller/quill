@@ -26,6 +26,7 @@ class ApiSession:
                 # execute pre_execute hooks
                 for module in relevant_modules:
                     await module.pre_execute(query, self)
+                    
             # execute main hooks
             result = None
             
