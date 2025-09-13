@@ -23,7 +23,7 @@ class CreateTable(WriteOperation):
         cols = self.columns.copy()
         cols.insert(0, Column(name="id", data_type="int"))
         for i, col in enumerate(cols):
-            col_sql, col_params = col.to_sql()
+            col_sql, col_params = col.to_sql(dialect)
             sql += (", " if i > 0 else "") + col_sql
             params.extend(col_params)
         sql += ");" if dialect != "mysql" else ") ENGINE=InnoDB;"

@@ -24,6 +24,7 @@ class DatabaseTest:
         params = DatabaseParams(
             driver=postgres_container
         )
+        await self._run_with_different_params(params)
         
         
     @pytest.mark.asyncio

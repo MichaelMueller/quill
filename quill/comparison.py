@@ -18,12 +18,12 @@ class Comparison(Condition):
         sql = ""
         params = []
         
-        left_sql, left_params = self.left.to_sql()
+        left_sql, left_params = self.left.to_sql(dialect)
         sql += left_sql + " " + self.operator + " "
         params.extend(left_params)
         
         if isinstance(self.right, ValueExpression):
-            right_sql, right_params = self.right.to_sql()
+            right_sql, right_params = self.right.to_sql(dialect)
             sql += right_sql
             params.extend(right_params)
         elif isinstance(self.right, list):

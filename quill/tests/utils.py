@@ -1,8 +1,9 @@
-import subprocess
-import time
-import socket
-import pytest
+import subprocess, time, socket, pytest, sys, os
 from typing import Generator
+# local
+project_path = os.path.abspath( os.path.dirname( __file__) + "/../.." )
+if not project_path in sys.path:
+    sys.path.insert(0, project_path)
 from quill import PostgresDriverParams, MysqlDriverParams
 
 def wait_for_port(host: str, port: int, timeout: float = 30.0):
@@ -42,9 +43,12 @@ def stop_container(name: str):
 
 @pytest.fixture(scope="session")
 def postgres_container() -> Generator[PostgresDriverParams, None, None]:
-
+    yield from _postgres_container()
+    
+def _postgres_container() -> Generator[PostgresDriverParams, None, None]:
     try:
         name = "pytest-postgres"
+        stop_container(name)
         image = "postgres:16"
         env = {"POSTGRES_PASSWORD": "secret"}
         ports = {25432: 5432}
@@ -67,7 +71,8 @@ def postgres_container() -> Generator[PostgresDriverParams, None, None]:
 @pytest.fixture(scope="session")
 def mysql_container():
     try:
-        name = "pytest-mysql"
+        name = "pytest-mysql"        
+        stop_container(name)
         image = "mysql:8"
         env = {
             "MYSQL_ROOT_PASSWORD": "secret",
@@ -90,4 +95,27 @@ def mysql_container():
     finally:
         stop_container(name)
 
+async def sandbox():
+    # for manual testing
+    for params in _postgres_container():
+        print(params)        
+        import asyncpg
+        pool:asyncpg.Pool = await asyncpg.create_pool(
+            user=params.user,
+            password=params.password,
+            database=params.database,
+            host=params.host,
+            port=params.port,
+            min_size=params.pool_min_size,
+            max_size=params.pool_max_size,
+        )
 
+        async with pool.acquire() as conn:
+            rows = await conn.fetch("SELECT 1;")
+            data:list[dict] = [dict(row) for row in rows]
+            print(list( data[0].values() ) [0])
+        await pool.close()
+                
+if __name__ == "__main__":
+    import asyncio
+    asyncio.run(sandbox())

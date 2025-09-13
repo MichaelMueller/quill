@@ -26,7 +26,7 @@ class Select(Query):
         sql += " FROM " + ", ".join(self.table_names)
         params = []
         if self.where:
-            where_sql, where_params = self.where.to_sql()
+            where_sql, where_params = self.where.to_sql(dialect)
             sql += " WHERE " + where_sql
             params.extend(where_params)
         if self.order_by:

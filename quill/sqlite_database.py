@@ -28,7 +28,7 @@ class SqliteDatabase(Database):
 
     async def _execute_select(self, query:Select) -> AsyncGenerator[tuple, None]:
         db = self._db
-        sql, params = query.to_sql()
+        sql, params = query.to_sql("sqlite")
         async with db.execute(sql, params) as cursor:
             async for row in cursor:        # row is a tuple, e.g. (1, "Alice", 31)
                 yield row        
@@ -36,7 +36,7 @@ class SqliteDatabase(Database):
     async def _execute_write_operation(self, write_operation:WriteOperation) -> int:
         db = self._db
         
-        sql, params = write_operation.to_sql()
+        sql, params = write_operation.to_sql("sqlite")
         async with db.execute(sql, params) as cursor:
             if isinstance(write_operation, Insert):
                 return cursor.lastrowid

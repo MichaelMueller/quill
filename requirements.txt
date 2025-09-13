@@ -1,8 +1,8 @@
 pydantic
 pydantic_settings
 aiosqlite
-aiopg
-aiomysql
+asyncpg
+asyncmy
 # modules
 PyJWT
 argon2-cffi

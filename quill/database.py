@@ -12,7 +12,7 @@ from quill.select import Select
 from quill.comparison import Comparison
 from quill.ref import Ref
 from quill.driver import Driver
-from quill.database_params import DatabaseParams, SqliteDriverParams, PostgresDriverParams
+from quill.database_params import DatabaseParams, SqliteDriverParams, PostgresDriverParams, MysqlDriverParams
 
 class Database:    
     def __init__(self, db_params: Optional[DatabaseParams] = None):        
@@ -69,7 +69,10 @@ class Database:
     
     async def driver(self) -> Driver:
         if self._driver is None:
-            if isinstance(self._db_params.driver, PostgresDriverParams):
+            if isinstance(self._db_params.driver, PostgresDriverParams):                
+                from quill.postgres_driver import PostgresDriver
+                self._driver = PostgresDriver(self._db_params.driver)
+            elif isinstance(self._db_params.driver, MysqlDriverParams):
                 raise NotImplementedError()
             elif isinstance(self._db_params.driver, SqliteDriverParams):
                 from quill.sqlite_driver import SqliteDriver
