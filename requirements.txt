@@ -2,6 +2,10 @@ pydantic
 pydantic_settings
 aiosqlite
 aiopg
+aiomysql
+# modules
+PyJWT
+argon2-cffi
 # testing
 pytest
 pytest-cov

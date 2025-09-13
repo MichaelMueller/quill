@@ -42,5 +42,8 @@ class Module:
     async def post_execute(self, op:WriteOperation, db_session:Session, inserted_id_or_affected_rows:Optional[int]=None) -> None:
         pass
     
+    async def post_commit(self, transaction:Optional[Transaction]) -> None:
+        pass
+    
     def priority(self) -> int:
         return 0

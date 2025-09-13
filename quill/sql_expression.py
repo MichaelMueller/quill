@@ -5,7 +5,7 @@ import pydantic
 # local
 
 IDENTIFIER_REGEX = r"^[A-Za-z_][A-Za-z0-9_]*$"
-SUPPORTED_DIALECTS = Literal["sqlite", "postgres"]
+SUPPORTED_DIALECTS = Literal["sqlite", "postgres", "mysql"]
 
 class SqlExpression(pydantic.BaseModel):
     type:str

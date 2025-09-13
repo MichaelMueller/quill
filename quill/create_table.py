@@ -13,8 +13,7 @@ class CreateTable(WriteOperation):
     if_not_exists: bool = False
 
     def to_sql(self, dialect:SUPPORTED_DIALECTS="sqlite") -> tuple[str, list[Any]]:
-        
-                
+                        
         # Build CREATE TABLE statement and parameters from CreateTableData
         sql = "CREATE TABLE "
         if self.if_not_exists:
@@ -27,5 +26,5 @@ class CreateTable(WriteOperation):
             col_sql, col_params = col.to_sql()
             sql += (", " if i > 0 else "") + col_sql
             params.extend(col_params)
-        sql += ")"
+        sql += ");" if dialect != "mysql" else ") ENGINE=InnoDB;"
         return sql, params

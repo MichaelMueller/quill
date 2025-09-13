@@ -5,6 +5,7 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 # local
 from quill.postgres_driver_params import PostgresDriverParams
 from quill.sqlite_driver_params import SqliteDriverParams
+from quill.mysql_driver_params import MysqlDriverParams
 
 class DatabaseParams(BaseSettings):
     model_config = SettingsConfigDict(
@@ -15,4 +16,4 @@ class DatabaseParams(BaseSettings):
     )
 
     # define your settings
-    driver_params:Union[SqliteDriverParams, PostgresDriverParams]
+    driver:Union[SqliteDriverParams, PostgresDriverParams, MysqlDriverParams]

@@ -24,5 +24,6 @@ from quill.sqlite_driver_params import SqliteDriverParams
 from quill.sqlite_session import SqliteSession
 from quill.sqlite_driver import SqliteDriver
 from quill.postgres_driver_params import PostgresDriverParams
+from quill.mysql_driver_params import MysqlDriverParams
 from quill.database_params import DatabaseParams
 from quill.database import Database

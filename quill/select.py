@@ -35,10 +35,14 @@ class Select(Query):
                     sql += f" ORDER BY {col} {order}"
                 else:
                     sql += f", {col} {order}"
+            
+        if dialect == "mysql" and self.offset is not None and self.limit is None:
+            raise ValueError("MySQL requires LIMIT when OFFSET is specified")
         if self.limit is not None:
             sql += " LIMIT ?"
             params.append(self.limit)
         if self.offset is not None:
             sql += " OFFSET ?"
             params.append(self.offset)
+            
         return sql, params

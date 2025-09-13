@@ -21,13 +21,17 @@ class Database:
         self._driver: Optional[Driver] = None
 
     async def register_module(self, module_type:Type["Module"], args:Optional[dict[str, Any]]=None, exists_ok:bool = False) -> None:
-        if module_type in self._modules:
-            if exists_ok:
-                return
-            raise ValueError("Module already registered")
+        mros = self._module_mros(module_type)
+        
+        if not exists_ok:
+            for mro in mros:
+                if mro in self._modules:
+                    raise ValueError(f"Cannot register module {module_type.__name__}, because base class {mro.__name__} is already registered")
+
         module = module_type(self) if args is None else module_type(self, **args)
         await module.initialize()
-        self._modules[module_type] = module
+        for mro in mros:
+            self._modules[mro] = module
 
     def module(self, module_type:Type["Module"]) -> Optional["Module"]:
         return self._modules.get(module_type, None)
@@ -35,8 +39,17 @@ class Database:
     async def unregister_module(self, module_type:Type["Module"]) -> None:
         module = self._modules[module_type] 
         await module.shutdown()
-        del self._modules[module_type]    
+        mros = self._module_mros(module_type)
+        for mro in mros:
+            del self._modules[mro]
 
+    def _module_mros(self,module_type:Type["Module"]) -> set[Type["Module"]]:
+        from quill.module import Module        
+        mros = set( module_type.mro() )
+        mros.remove(object)
+        mros.remove(Module)
+        return mros
+    
     async def first_row(self, table_name:str) -> Optional[tuple]:
         query = Select(table_names=[table_name], limit=1)
         return await self.one(query)
@@ -56,11 +69,11 @@ class Database:
     
     async def driver(self) -> Driver:
         if self._driver is None:
-            if isinstance(self._db_params.driver_params, PostgresDriverParams):
+            if isinstance(self._db_params.driver, PostgresDriverParams):
                 raise NotImplementedError()
-            elif isinstance(self._db_params.driver_params, SqliteDriverParams):
+            elif isinstance(self._db_params.driver, SqliteDriverParams):
                 from quill.sqlite_driver import SqliteDriver
-                self._driver = SqliteDriver(self._db_params.driver_params)
+                self._driver = SqliteDriver(self._db_params.driver)
             else:
                 raise ValueError(f"Unsupported driver: {self._db_params.driver}")
         return self._driver
@@ -80,7 +93,7 @@ class Database:
             inserted_ids_and_affected_rows = []
 
         # sort modules by priority
-        modules:list[Module] = []
+        modules:list[Module] = list( set( self._modules.values() ) )
         modules = sorted(modules, key=lambda m: m.priority(), reverse=True)
 
         # open db session
@@ -109,6 +122,9 @@ class Database:
         
         # yield results after session is closed and committed
         if inserted_ids_and_affected_rows is not None:
+            for module in modules:
+                await module.post_commit(query)
+                
             for result in inserted_ids_and_affected_rows:
                 yield result
 

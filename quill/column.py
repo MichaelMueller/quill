@@ -15,13 +15,25 @@ class Column(SqlExpression):
     max_length: Optional[int] = None
 
     def to_sql(self, dialect:SUPPORTED_DIALECTS="sqlite") -> tuple[str, list[Any]]:
-        type_map = {"str": "TEXT","int": "INTEGER","float": "REAL","bool": "BOOLEAN","bytes": "BLOB"}
-
+        
+        if dialect == "postgres":
+            type_map = {"str": "TEXT", "int": "INTEGER", "float": "DOUBLE PRECISION", "bool": "BOOLEAN", "bytes": "BYTEA"}
+        elif dialect == "mysql":
+            type_map = {"str": f"VARCHAR({self.max_length if self.max_length else 255})", "int": "INT", "float": "FLOAT", "bool": "TINYINT(1)", "bytes": "BLOB"}
+        else:  # sqlite
+            type_map = {"str": "TEXT","int": "INTEGER","float": "REAL","bool": "BOOLEAN","bytes": "BLOB"}
+            
         type_ = type_map.get(self.data_type)
         args = []
         sql = f"{self.name} {type_}"
+        
         if self.name == "id":
-            sql += " PRIMARY KEY AUTOINCREMENT"
+            if dialect == "postgres":
+                sql += " SERIAL PRIMARY KEY"
+            elif dialect == "mysql":
+                sql += " INT PRIMARY KEY AUTO_INCREMENT"
+            else:
+                sql += " PRIMARY KEY AUTOINCREMENT"
         else:
             if not self.is_nullable:
                 sql += " NOT NULL"

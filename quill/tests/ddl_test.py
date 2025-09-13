@@ -30,7 +30,7 @@ class DdlTest:
             if_not_exists=True
         )
         sql, params = create_table.to_sql()
-        assert sql.lower() == "create table if not exists my_table (id integer primary key autoincrement, name text not null default 'user', age integer default 18, admin boolean default 0, bio text default null)"
+        assert sql.lower() == "create table if not exists my_table (id integer primary key autoincrement, name text not null default 'user', age integer default 18, admin boolean default 0, bio text default null);"
         assert params == []
         
     def test_rename_table(self):
