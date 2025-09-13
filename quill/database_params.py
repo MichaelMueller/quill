@@ -11,7 +11,7 @@ class DatabaseParams(BaseSettings):
     model_config = SettingsConfigDict(
         env_file=".env",            # optional: load from .env file
         env_file_encoding="utf-8",
-        env_nested_delimiter="__",
+        env_nested_delimiter="_",
         extra="ignore",             # ignore extra vars instead of raising
     )
 

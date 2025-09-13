@@ -11,12 +11,16 @@ class Update(WriteOperation):
     values: dict[str, Optional[Any]]
     id:int
             
-    def to_sql(self, dialect:SUPPORTED_DIALECTS="sqlite") -> tuple[str, list[Any]]:
+    def to_sql(self, dialect:SUPPORTED_DIALECTS="sqlite", params:list[Any]=[]) -> str:
         sql = ""
+        
         for col in self.values.keys():
             if col == "id":
                 raise ValueError("Cannot update the 'id' column")
-            sql += f"{", " if sql != '' else ''}{col} = ?" 
-        sql = f"UPDATE {self.table_name} SET {sql} WHERE id = ?"
-        params = list(self.values.values()) + [self.id]
-        return sql, params
+            
+            sql += f"{", " if sql != '' else ''}{col} = {self.next_placeholder(dialect, params)}" 
+            params.append(self.values[col])
+            
+        sql = f"UPDATE {self.table_name} SET {sql} WHERE id = {self.next_placeholder(dialect, params)}"
+        params.append( self.id )
+        return sql

@@ -11,8 +11,7 @@ class Length(ValueExpression):
     type:Literal["length"] = "length"
     column: Ref
 
-    def to_sql(self, dialect:SUPPORTED_DIALECTS="sqlite") -> tuple[str, list[Any]]:
+    def to_sql(self, dialect:SUPPORTED_DIALECTS="sqlite", params:list[Any]=[]) -> str:
         sql = "LENGTH("
         sql += self.column.name + ")"
-        params: list[Any] = []
-        return sql, params
+        return sql

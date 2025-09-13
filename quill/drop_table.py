@@ -10,6 +10,6 @@ class DropTable(WriteOperation):
     type:Literal["drop_table"] = "drop_table"
     if_exists: bool = False
     
-    def to_sql(self, dialect:SUPPORTED_DIALECTS="sqlite") -> tuple[str, list[Any]]:
+    def to_sql(self, dialect:SUPPORTED_DIALECTS="sqlite", params:list[Any]=[]) -> str:
         sql = f"DROP TABLE {'IF EXISTS' if self.if_exists else ''} {self.table_name}"
-        return sql, []
+        return sql

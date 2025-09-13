@@ -10,6 +10,6 @@ class RenameTable(WriteOperation):
     type:Literal["rename_table"] = "rename_table"
     new_table_name: str = pydantic.Field(..., pattern=IDENTIFIER_REGEX)
         
-    def to_sql(self, dialect:SUPPORTED_DIALECTS="sqlite") -> tuple[str, list[Any]]:
+    def to_sql(self, dialect:SUPPORTED_DIALECTS="sqlite", params:list[Any]=[]) -> str:
         sql = f"ALTER TABLE {self.table_name} RENAME TO {self.new_table_name}"
-        return sql, []
+        return sql

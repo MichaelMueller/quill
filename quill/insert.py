@@ -10,9 +10,11 @@ class Insert(WriteOperation):
     type:Literal["insert"] = "insert"
     values: dict[str, Optional[Any]]
         
-    def to_sql(self, dialect:SUPPORTED_DIALECTS="sqlite") -> tuple[str, list[Any]]:
+    def to_sql(self, dialect:SUPPORTED_DIALECTS="sqlite", params:list[Any]=[]) -> str:
         columns = ', '.join(self.values.keys())
-        placeholders = ', '.join(['?' for _ in self.values])
-        sql = f"INSERT INTO {self.table_name} ({columns}) VALUES ({placeholders})"
-        params = list(self.values.values())
-        return sql, params
+        placeholder_str = ""
+        for value in self.values.values():
+            placeholder_str += f"{", " if placeholder_str != "" else ""}{self.next_placeholder(dialect, params)}"
+            params.append(value)
+        sql = f"INSERT INTO {self.table_name} ({columns}) VALUES ({placeholder_str})"
+        return sql

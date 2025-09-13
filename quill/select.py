@@ -3,11 +3,11 @@ from typing import Optional, Literal, Any, List, Tuple
 # 3rd party
 import pydantic
 # local
-from quill.query import Query
+from quill.sql_query import SqlQuery
 from quill.condition import Condition
 from quill.sql_expression import SUPPORTED_DIALECTS
 
-class Select(Query):
+class Select(SqlQuery):
     type: str = "select"
     table_names: list[str]
     columns: Optional[list[str]] = None
@@ -20,13 +20,13 @@ class Select(Query):
     
     as_dict: bool = False
                 
-    def to_sql(self, dialect:SUPPORTED_DIALECTS="sqlite") -> tuple[str, list[Any]]:
+    def to_sql(self, dialect:SUPPORTED_DIALECTS="sqlite", params:list[Any]=[]) -> str:
         # Build SELECT statement and parameters from SelectData
         sql = "SELECT " + ( ", ".join(self.columns) if self.columns else "*" )
         sql += " FROM " + ", ".join(self.table_names)
-        params = []
         if self.where:
-            where_sql, where_params = self.where.to_sql(dialect)
+            where_params = []
+            where_sql = self.where.to_sql(dialect, where_params)
             sql += " WHERE " + where_sql
             params.extend(where_params)
         if self.order_by:
@@ -39,10 +39,10 @@ class Select(Query):
         if dialect == "mysql" and self.offset is not None and self.limit is None:
             raise ValueError("MySQL requires LIMIT when OFFSET is specified")
         if self.limit is not None:
-            sql += " LIMIT ?"
+            sql += f" LIMIT {self.next_placeholder(dialect, params)}"
             params.append(self.limit)
         if self.offset is not None:
-            sql += " OFFSET ?"
+            sql += f" OFFSET {self.next_placeholder(dialect, params)}"
             params.append(self.offset)
             
-        return sql, params
+        return sql

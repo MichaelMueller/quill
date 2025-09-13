@@ -1,5 +1,5 @@
 # builtin
-from typing import Literal
+from typing import Literal, Any
 # 3rd party
 import pydantic
 # local
@@ -11,9 +11,8 @@ class Or(Condition):
     type:Literal["or"] = "or"
     items: list[Condition]
     
-    def to_sql(self, dialect:SUPPORTED_DIALECTS="sqlite"):
+    def to_sql(self, dialect:SUPPORTED_DIALECTS="sqlite", params:list[Any]=[]) -> str:
         sql = ""
-        params = []
 
         for i, item in enumerate(self.items):
             item_sql, item_params = item.to_sql(dialect)
@@ -22,4 +21,4 @@ class Or(Condition):
             if i < len(self.items) - 1:
                 sql += " OR "
 
-        return sql, params
+        return sql

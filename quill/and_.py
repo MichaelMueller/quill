@@ -1,5 +1,5 @@
 # builtin
-from typing import Literal
+from typing import Literal, Any
 # 3rd party
 import pydantic
 # local
@@ -11,15 +11,14 @@ class And(Condition):
     type:Literal["and"] = "and"
     items: list[Condition]
     
-    def to_sql(self, dialect:SUPPORTED_DIALECTS="sqlite"):
+    def to_sql(self, dialect:SUPPORTED_DIALECTS="sqlite", params:list[Any]=[]) -> str:
         sql = ""
-        params = []
 
         for i, item in enumerate(self.items):
-            item_sql, item_params = item.to_sql(dialect)
+            item_sql, item_params = item.to_sql(dialect, params)
             sql += f"{item_sql}" if isinstance(item, Comparison) else f"({item_sql})"
             params.extend(item_params)
             if i < len(self.items) - 1:
                 sql += " AND "
 
-        return sql, params
+        return sql

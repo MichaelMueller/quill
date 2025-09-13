@@ -10,7 +10,11 @@ class Delete(WriteOperation):
     type:Literal["delete"] = "delete"    
     ids: list[int]
     
-    def to_sql(self, dialect:SUPPORTED_DIALECTS="sqlite") -> tuple[str, list[Any]]:
-        sql = f"DELETE FROM {self.table_name} WHERE id IN ({', '.join(['?' for _ in self.ids])})"
-        params = self.ids
-        return sql, params
+    def to_sql(self, dialect:SUPPORTED_DIALECTS="sqlite", params:list[Any]=[]) -> str:
+        
+        sub_sql = ""
+        for id in self.ids:
+            sub_sql += f"{", " if sub_sql != "" else ""}{self.next_placeholder(dialect, params)}"
+            params.append(id)
+        sql = f"DELETE FROM {self.table_name} WHERE id IN ({sub_sql})"
+        return sql

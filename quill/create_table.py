@@ -12,7 +12,7 @@ class CreateTable(WriteOperation):
     columns: list[Column]
     if_not_exists: bool = False
 
-    def to_sql(self, dialect:SUPPORTED_DIALECTS="sqlite") -> tuple[str, list[Any]]:
+    def to_sql(self, dialect:SUPPORTED_DIALECTS="sqlite", params:list[Any]=[]) -> str:
                         
         # Build CREATE TABLE statement and parameters from CreateTableData
         sql = "CREATE TABLE "
@@ -23,8 +23,9 @@ class CreateTable(WriteOperation):
         cols = self.columns.copy()
         cols.insert(0, Column(name="id", data_type="int"))
         for i, col in enumerate(cols):
-            col_sql, col_params = col.to_sql(dialect)
+            col_params = []
+            col_sql = col.to_sql(dialect, params)
             sql += (", " if i > 0 else "") + col_sql
             params.extend(col_params)
         sql += ");" if dialect != "mysql" else ") ENGINE=InnoDB;"
-        return sql, params
+        return sql

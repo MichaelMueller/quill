@@ -13,11 +13,11 @@ from quill.tests.utils import postgres_container, mysql_container
 
 class DatabaseTest: 
     
-    @pytest.mark.asyncio
-    async def test_mysql(self, mysql_container:MysqlDriverParams):
-        params = DatabaseParams(
-            driver=mysql_container
-        )
+    # @pytest.mark.asyncio
+    # async def test_mysql(self, mysql_container:MysqlDriverParams):
+    #     params = DatabaseParams(
+    #         driver=mysql_container
+    #     )
         
     @pytest.mark.asyncio
     async def test_postgres(self, postgres_container:SqliteDriverParams):

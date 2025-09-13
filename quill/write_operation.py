@@ -4,7 +4,7 @@ from typing import Literal
 import pydantic
 # local
 from quill.sql_expression import IDENTIFIER_REGEX
-from quill.query import Query
+from quill.sql_query import SqlQuery
 
-class WriteOperation(Query):
+class WriteOperation(SqlQuery):
     table_name: str = pydantic.Field(..., pattern=IDENTIFIER_REGEX)

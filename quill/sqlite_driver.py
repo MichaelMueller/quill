@@ -19,22 +19,24 @@ class SqliteDriver(Driver):
         self._db:Optional[aiosqlite.Connection] = None
         self._in_memory_or_unknown_tmp_file:Optional[bool] = None
                     
-    async def create_session(self) -> Session:     
-        
+    async def create_session(self) -> Session: 
+        return SqliteSession( self.get_connection )
+
+    async def get_connection(self) -> tuple[aiosqlite.Connection, bool]: 
         # new connection for real file-based db, shared connection for in-memory or unknown temp file db
         if self._in_memory_or_unknown_tmp_file is None:
-
             self._in_memory_or_unknown_tmp_file = self._params.database_file == ":memory:" or self._params.database_file == ""
-
             if self._in_memory_or_unknown_tmp_file:
                 self._db = await self._new_connection()
             else:
-                db_dir = os.path.dirname(self._params.database_file)
+                db_dir = os.path.dirname(self._params.database_file)   
                 os.makedirs(db_dir, exist_ok=True)
-           
-        db = self._db if self._in_memory_or_unknown_tmp_file else await self._new_connection()
-        return SqliteSession( db, close_on_exit = self._in_memory_or_unknown_tmp_file == False )
-    
+        if self._in_memory_or_unknown_tmp_file:
+            return self._db, False
+        else:
+            db = await self._new_connection()
+            return db, True # new connrection every time
+                
     async def _new_connection(self) -> aiosqlite.Connection:
         db = await aiosqlite.connect(self._params.database_file, timeout=self._params.timeout)
         if self._params.wal_mode:

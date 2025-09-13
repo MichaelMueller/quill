@@ -10,9 +10,6 @@ class Session:
     def __init__(self):
         pass
     
-    async def __aenter__(self):
-        raise NotImplementedError()
-
     async def select(self, select:Select) -> AsyncGenerator[tuple | dict, None]:
         # query items may change during iteration -> safe for loop!
         raise NotImplementedError()
@@ -21,12 +18,11 @@ class Session:
     async def write(self, write_operation:WriteOperation) -> Optional[int]:
         raise NotImplementedError()
         
-    async def _commit(self) -> None:
+    async def commit(self) -> None:
         raise NotImplementedError()
+    
+    async def rollback(self) -> None:
+        pass
 
-    async def _close_session(self) -> None:
+    async def close_session(self) -> None:
         raise NotImplementedError()    
-
-    async def __aexit__(self, exc_type, exc, tb):
-        await self._commit()
-        await self._close_session()

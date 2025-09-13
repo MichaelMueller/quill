@@ -1,5 +1,5 @@
 from quill.column import Column
-from quill.query import Query
+from quill.sql_query import SqlQuery
 from quill.write_operation import WriteOperation
 from quill.create_table import CreateTable
 from quill.rename_table import RenameTable

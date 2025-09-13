@@ -14,7 +14,7 @@ class Column(SqlExpression):
     default: Optional[Union[str, int, float, bool, bytes]] = None
     max_length: Optional[int] = None
 
-    def to_sql(self, dialect:SUPPORTED_DIALECTS="sqlite") -> tuple[str, list[Any]]:
+    def to_sql(self, dialect:SUPPORTED_DIALECTS="sqlite", params:list[Any]=[]) -> str:
         
         if dialect == "postgres":
             type_map = {"str": "TEXT", "int": "INTEGER", "float": "DOUBLE PRECISION", "bool": "BOOLEAN", "bytes": "BYTEA"}
@@ -24,14 +24,15 @@ class Column(SqlExpression):
             type_map = {"str": "TEXT","int": "INTEGER","float": "REAL","bool": "BOOLEAN","bytes": "BLOB"}
             
         type_ = type_map.get(self.data_type)
-        args = []
+        if dialect == "postgres" and self.name == "id":
+            type_ = "SERIAL"
         sql = f"{self.name} {type_}"
         
         if self.name == "id":
             if dialect == "postgres":
-                sql += " SERIAL PRIMARY KEY"
+                sql += " PRIMARY KEY"
             elif dialect == "mysql":
-                sql += " INT PRIMARY KEY AUTO_INCREMENT"
+                sql += " PRIMARY KEY AUTO_INCREMENT"
             else:
                 sql += " PRIMARY KEY AUTOINCREMENT"
         else:
@@ -54,5 +55,5 @@ class Column(SqlExpression):
                 else:
                     default_sql_value = self.default
                 sql += f" DEFAULT {default_sql_value}"
-        return sql, args
+        return sql
     

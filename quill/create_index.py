@@ -10,7 +10,7 @@ class CreateIndex(ManageIndex):
     type:Literal["create_index"] = "create_index"
     if_not_exists: bool = False
     
-    def to_sql(self, dialect:SUPPORTED_DIALECTS="sqlite") -> tuple[str, list[Any]]:
+    def to_sql(self, dialect:SUPPORTED_DIALECTS="sqlite", params:list[Any]=[]) -> str:
         index_name = self._index_name()
 
         sql = "CREATE "
@@ -22,4 +22,4 @@ class CreateIndex(ManageIndex):
         sql += index_name + " ON " + self.table_name + " ("
         sql += ", ".join(self.columns)
         sql += ")"
-        return sql, []
+        return sql
