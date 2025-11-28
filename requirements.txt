@@ -1,11 +1,4 @@
 pydantic
-pydantic_settings
-aiosqlite
-asyncpg
-aiomysql
-# modules
-PyJWT
-argon2-cffi
 # testing
 pytest
 pytest-cov

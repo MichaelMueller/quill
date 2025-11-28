@@ -11,7 +11,6 @@ from quill.condition import Condition
 from quill.sql_expression import SqlExpression
 from quill.select import Select
 from quill.transaction import Transaction
-from quill.module import Module
 
 class AbstractClassesTest:
 

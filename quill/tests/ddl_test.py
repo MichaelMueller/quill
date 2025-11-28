@@ -29,8 +29,22 @@ class DdlTest:
             ],
             if_not_exists=True
         )
-        sql, params = create_table.to_sql()
+        dialect = "sqlite"
+        params = []
+        sql = create_table.to_sql(dialect, params)
         assert sql.lower() == "create table if not exists my_table (id integer primary key autoincrement, name text not null default 'user', age integer default 18, admin boolean default 0, bio text default null);"
+        assert params == []
+        
+        dialect = "mysql"
+        params = []
+        sql = create_table.to_sql(dialect, params)
+        assert sql.lower() == "CREATE TABLE IF NOT EXISTS my_table (id INT PRIMARY KEY AUTO_INCREMENT, name VARCHAR(255) NOT NULL DEFAULT 'user', age INT DEFAULT 18, admin TINYINT(1) DEFAULT 0, bio VARCHAR(255) DEFAULT NULL) ENGINE=InnoDB;".lower()
+        assert params == []
+        
+        dialect = "postgres"
+        params = []
+        sql = create_table.to_sql(dialect, params)
+        assert sql.lower() == "CREATE TABLE IF NOT EXISTS my_table (id SERIAL PRIMARY KEY, name TEXT NOT NULL DEFAULT 'user', age INTEGER DEFAULT 18, admin BOOLEAN DEFAULT 0, bio TEXT DEFAULT NULL);".lower()
         assert params == []
         
     def test_rename_table(self):
@@ -38,7 +52,8 @@ class DdlTest:
             table_name="my_table",
             new_table_name="new_table"
         )
-        sql, params = rename_table.to_sql()
+        params = []
+        sql = rename_table.to_sql(params)
         assert sql.lower() == "alter table my_table rename to new_table"
         assert params == []
 
@@ -47,7 +62,9 @@ class DdlTest:
             table_name="my_table",
             if_exists=True
         )
-        sql, params = drop_table.to_sql()
+        dialect = "sqlite"
+        params = []
+        sql = drop_table.to_sql(dialect, params)
         assert sql.lower() == "drop table if exists my_table"
         assert params == []
 
@@ -58,7 +75,9 @@ class DdlTest:
             unique=False,
             if_not_exists=True
         )
-        sql, params = create_index.to_sql()
+        dialect = "sqlite"
+        params = []
+        sql = create_index.to_sql(dialect, params)
         assert sql.lower() == "create index if not exists my_table_name_idx on my_table (name)"
         assert params == []
         
@@ -68,7 +87,9 @@ class DdlTest:
             unique=True,
             if_not_exists=False
         )
-        sql, params = create_unique_index.to_sql()
+        dialect = "sqlite"
+        params = []
+        sql = create_unique_index.to_sql(dialect, params)
         assert sql.lower() == "create unique index my_table_name_age_uidx on my_table (name, age)"
         assert params == []
 
@@ -79,8 +100,22 @@ class DdlTest:
             unique=True,
             if_exists=True
         )
-        sql, params = drop_index.to_sql()
+        dialect = "sqlite"
+        params = []
+        sql = drop_index.to_sql(dialect, params)
         assert sql.lower() == "drop index if exists my_table_name_age_uidx"
+        assert params == []
+        
+        dialect = "mysql"
+        params = []
+        sql = drop_index.to_sql(dialect, params)
+        assert sql.lower() == 'DROP INDEX my_table_name_age_uidx ON my_table'.lower()
+        assert params == []
+        
+        dialect = "postgres"
+        params = []
+        sql = drop_index.to_sql(dialect, params)
+        assert sql.lower() == 'DROP INDEX IF EXISTS my_table_name_age_uidx'.lower()
         assert params == []
            
 

@@ -25,7 +25,10 @@ class DmlTest:
                 "age": 30
             }
         )
-        sql, params = insert.to_sql()
+        
+        dialect = "sqlite"
+        params = []
+        sql = insert.to_sql(dialect, params)
         assert sql.lower() == "insert into my_table (name, age) values (?, ?)"
         assert params == ["John", 30]
         
@@ -34,7 +37,10 @@ class DmlTest:
             table_name="my_table",
             ids=[1, 2, 3]
         )
-        sql, params = delete.to_sql()
+        
+        dialect = "sqlite"
+        params = []
+        sql = delete.to_sql(dialect=dialect, params=params)
         assert sql.lower() == "delete from my_table where id in (?, ?, ?)"
         assert params == [1, 2, 3]
         
@@ -47,7 +53,10 @@ class DmlTest:
                 "age": 25
             }
         )
-        sql, params = update.to_sql()
+        
+        dialect = "sqlite"
+        params = []
+        sql = update.to_sql(dialect, params)
         assert sql.lower() == "update my_table set name = ?, age = ? where id = ?"
         assert params == ["Jane", 25, 1]   
         
@@ -82,8 +91,11 @@ class DmlTest:
                 )
             ]
         )
-        sql, params = transaction.to_sql()
-        assert sql.lower() == "insert into my_table (name, age) values (?, ?); update my_table set age = ? where id = ?; delete from my_table where id in (?, ?);"
+        
+        dialect = "sqlite"
+        params = []
+        sql = transaction.to_sql(dialect, params)
+        assert sql.lower() == "insert into my_table (name, age) values (?, ?);update my_table set age = ? where id = ?;delete from my_table where id in (?, ?);"
         assert params == ["Alice", 28, 29, 1, 2, 3]
         
 if __name__ == "__main__":

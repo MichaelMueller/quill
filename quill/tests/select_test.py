@@ -49,12 +49,24 @@ class SelectTest:
             where=condition,
             limit=10,
             offset=0,
-            order_by=[ ("name", "asc") ]
+            order_by=[ ("name", "asc"), ("age", "desc") ]
         )
-        sql, params = select.to_sql()
-        assert sql.lower() == "select name, age from people where people.age > ? and (people.name like ? or name like ?) order by name asc limit ? offset ?"
+        dialect = "sqlite"
+        params = []
+        sql = select.to_sql(dialect=dialect, params=params)
+        assert sql.lower() == "select name, age from people where people.age > ? and (people.name like ? or name like ?) order by name asc, age desc limit ? offset ?"
         assert params == [18, "A%", "B%", 10, 0]
                 
+        dialect = "mysql"
+        params = []
+        sql = select.to_sql(dialect=dialect, params=params)
+        assert sql.lower() == 'SELECT name, age FROM people WHERE people.age > %s AND (people.name LIKE %s OR name LIKE %s) ORDER BY name asc, age desc LIMIT %s OFFSET %s'.lower()
+        
+        dialect = "postgres"
+        params = []
+        sql = select.to_sql(dialect=dialect, params=params)
+        assert sql.lower() == 'SELECT name, age FROM people WHERE people.age > $1 AND (people.name LIKE $1 OR name LIKE $1) ORDER BY name asc, age desc LIMIT $4 OFFSET $5'.lower()
+        
         where = Or(
             items=[
                 Comparison(
@@ -83,9 +95,23 @@ class SelectTest:
             columns=["id", "name", "surname", "age"],
             where=where
         )
-        sql, params = select.to_sql()
+        
+        
+        dialect = "sqlite"
+        params = []
+        sql = select.to_sql(dialect=dialect, params=params)
         assert sql.lower() == "select id, name, surname, age from people where age is ? or name = surname or id in (?, ?, ?) or length(name) >= ?"
         assert params == [None, 1, 2, 3, 5]
+        
+        ## mysql offset without limit raise test
+        select = Select(
+            table_names=["employees"],
+            offset=1
+        )
+        dialect = "mysql"
+        params = []
+        with pytest.raises(ValueError):
+            sql = select.to_sql(dialect=dialect, params=params)
 
 if __name__ == "__main__":
     # Run pytest against *this* file only

@@ -15,7 +15,8 @@ class And(Condition):
         sql = ""
 
         for i, item in enumerate(self.items):
-            item_sql, item_params = item.to_sql(dialect, params)
+            item_params = []
+            item_sql = item.to_sql(dialect, item_params)
             sql += f"{item_sql}" if isinstance(item, Comparison) else f"({item_sql})"
             params.extend(item_params)
             if i < len(self.items) - 1:
