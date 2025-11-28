@@ -20,7 +20,7 @@ class AbstractClassesTest:
     @pytest.mark.asyncio
     async def test(self):
         with pytest.raises(NotImplementedError):
-            Condition(type="comparison").to_sql()
+            Condition(type="condition").to_sql()
         with pytest.raises(NotImplementedError):
             SqlExpression(type="none").to_sql()
             

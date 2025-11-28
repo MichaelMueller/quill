@@ -10,8 +10,8 @@ from quill.sql_expression import SUPPORTED_DIALECTS
 class Comparison(Condition):
     type:Literal["comparison"] = "comparison"
     
-    operator: Literal["=", "!=", "<", "<=", ">", ">=", "LIKE", "IN", "IS", "IS NOT"]
     left: ValueExpression
+    operator: Literal["=", "!=", "<", "<=", ">", ">=", "LIKE", "IN", "IS", "IS NOT"]
     right: ValueExpression | int | list[int] | str | list[str] | float | list[float] | bool | None
     
     def to_sql(self, dialect:SUPPORTED_DIALECTS="sqlite", params:list[Any]=[]) -> str:

@@ -6,4 +6,4 @@ import pydantic
 from quill.sql_expression import SqlExpression
 
 class Condition(SqlExpression):
-    type:Literal["comparison"] = "comparison"
+    type:Literal["condition"] = "condition"
