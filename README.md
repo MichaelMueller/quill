@@ -1,6 +1,8 @@
 # quill
 SQL abstraction framework in Python / pydantic.
 Realizes the most common sql operations as pydantic models.
+The framework will always add a "id" column to the tables. DELETE, UPDATE will only work giving ids.
+This enforces straight per record change/deletion.
 
 # Usage
 
